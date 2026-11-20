@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="sl">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
@@ -24,41 +24,44 @@
     <div id="touch"></div>
   </div>
 
-  <!-- ===== Meni ===== -->
+  <!-- ===== Meni ===== (besedila prevaja src/i18n.js) -->
   <div id="menu">
     <div class="panel">
-      <button id="musicBtn" class="corner" title="Glasba (M)">🔊</button>
-      <h1>OBBY <span>DIRKA</span></h1>
+      <div class="corner">
+        <select id="langSelect" data-i18n-title="lang"></select>
+        <button id="musicBtn" data-i18n-title="music">🔊</button>
+      </div>
+      <h1>OBBY <span data-i18n="title2">DIRKA</span></h1>
 
-      <button id="resumeBtn" class="big primary" hidden>▶ Nadaljuj</button>
+      <button id="resumeBtn" class="big primary" hidden data-i18n="resume"></button>
       <p id="menuMsg" class="muted"></p>
 
       <section>
-        <h2>Tvoj lik <span id="wallet" class="wallet"></span></h2>
+        <h2><span data-i18n="yourChar"></span> <span id="wallet" class="wallet"></span></h2>
         <div class="row">
-          <input id="nameInput" maxlength="16" placeholder="Tvoje ime" />
+          <input id="nameInput" maxlength="16" data-i18n-ph="namePh" />
         </div>
         <div id="skins" class="row"></div>
         <div id="hats" class="hats"></div>
       </section>
 
       <section>
-        <h2>Proga: <input id="levelNameInput" maxlength="40" class="inline" /></h2>
+        <h2><span data-i18n="track"></span> <input id="levelNameInput" maxlength="40" class="inline" /></h2>
         <div class="row">
-          <button id="playBtn" class="big primary">▶ Igraj</button>
-          <button id="editBtn" class="big">🛠 Urejevalnik</button>
+          <button id="playBtn" class="big primary" data-i18n="play"></button>
+          <button id="editBtn" class="big" data-i18n="editor"></button>
         </div>
         <div class="row small">
-          <button id="shareBtn">📤 Deli progo</button>
-          <button id="loadBtn">📥 Naloži kodo</button>
-          <button id="saveBtn">💾 Shrani</button>
-          <button id="newBtn">✨ Nova</button>
-          <button id="sampleBtn">🗺 Vzorčna</button>
+          <button id="shareBtn" data-i18n="share"></button>
+          <button id="loadBtn" data-i18n="loadCode"></button>
+          <button id="saveBtn" data-i18n="save"></button>
+          <button id="newBtn" data-i18n="new"></button>
+          <button id="sampleBtn" data-i18n="sample"></button>
         </div>
         <div id="shareBox" hidden>
           <textarea id="codeArea" rows="3" spellcheck="false"></textarea>
           <div class="row small">
-            <button id="codeOkBtn" class="primary">Naloži</button>
+            <button id="codeOkBtn" class="primary" data-i18n="load"></button>
             <span id="codeMsg" class="muted"></span>
           </div>
         </div>
@@ -66,28 +69,27 @@
       </section>
 
       <section>
-        <h2>Igraj s prijatelji</h2>
+        <h2 data-i18n="playFriends"></h2>
         <div id="roomOut" class="row">
-          <button id="createRoomBtn">➕ Ustvari sobo</button>
-          <input id="roomInput" maxlength="4" placeholder="KODA" class="code" />
-          <button id="joinRoomBtn">Pridruži se</button>
+          <button id="createRoomBtn" data-i18n="createRoom"></button>
+          <input id="roomInput" maxlength="4" class="code" data-i18n-ph="codePh" />
+          <button id="joinRoomBtn" data-i18n="join"></button>
         </div>
         <div id="roomIn" hidden>
-          <p>Soba <b id="roomCode" class="code"></b> – povej kodo prijateljem!</p>
+          <p><span data-i18n="room"></span> <b id="roomCode" class="code" dir="ltr"></b> <span data-i18n="roomTell"></span></p>
           <ul id="playerList"></ul>
           <div class="row">
-            <button id="raceBtn" class="primary">🏁 Začni dirko z mojo progo</button>
-            <button id="leaveRoomBtn">Zapusti sobo</button>
+            <button id="raceBtn" class="primary" data-i18n="startRace"></button>
+            <button id="leaveRoomBtn" data-i18n="leaveRoom"></button>
           </div>
         </div>
       </section>
 
       <details>
-        <summary>Kontrole</summary>
-        <p><b>Telefon:</b> levi palec joystick · desni palec obrača kamero · ⤒ skok · ↺ znova · 😀 emoti · ☰ meni</p>
-        <p><b>Igra:</b> WASD premikanje · Space skok · miška pogled · R znova · 1–4 emoti · Esc meni</p>
-        <p><b>Urejevalnik:</b> WASD letenje · Space gor · Shift dol · Ctrl hitreje · desni klik postavi ·
-          levi klik pobriši · kolešček/številke izberi kocko · Ctrl+Z razveljavi · E preizkusi progo</p>
+        <summary data-i18n="controls"></summary>
+        <p data-i18n-html="ctrlPhone"></p>
+        <p data-i18n-html="ctrlGame"></p>
+        <p data-i18n-html="ctrlEdit"></p>
       </details>
     </div>
   </div>

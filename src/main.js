@@ -9,13 +9,14 @@ import { Input } from './input.js'
 import { Editor } from './editor.js'
 import { Net, newRoomCode } from './net.js'
 import { sfx } from './sound.js'
+import { t, lang, setLang, applyDom, LANGS, blockName, emoteText, hatName } from './i18n.js'
 import { setupTouch } from './touch.js'
 import { worldTime } from './movers.js'
 import { Particles, FX } from './fx.js'
 import { startMusic, setMusic, musicOn } from './music.js'
 
 const $ = (id) => document.getElementById(id)
-const EMOTES = ['👋 Živjo!', '😂 Haha', '🏆 GG!', '⏳ Počakaj!']
+const EMOTE_COUNT = 4 // emoti se pošiljajo kot številka, vsak jih vidi v svojem jeziku
 
 // ---------- shranjevanje v brskalnik ----------
 const store = {
@@ -36,7 +37,7 @@ const input = new Input(canvas)
 const levelView = new LevelView(scene)
 const editor = new Editor(scene, camera, input, levelView)
 
-let level = sampleLevel()
+let level = sampleLevel(t('sampleName'))
 let mode = 'menu' // 'menu' | 'play' | 'edit' | 'race'
 let lastMode = null // kam se vrnemo z "Nadaljuj"
 const player = new Player(level)
@@ -116,12 +117,12 @@ editor.onChange = () => {
 // ============================================================
 function ensureMe() {
   if (me) me.dispose()
-  me = new Avatar(scene, { name: profile.name || 'Jaz', color: profile.color, hat: profile.hat })
+  me = new Avatar(scene, { name: profile.name || t('me'), color: profile.color, hat: profile.hat })
 }
 
 function startPlay(raceMode = false) {
-  if (!level.find(9)) return toast('Proga nima starta 🟦\nPostavi ga v urejevalniku.')
-  if (!level.find(11)) return toast('Proga nima cilja 🏁\nPostavi ga v urejevalniku.')
+  if (!level.find(9)) return toast(t('noStart'))
+  if (!level.find(11)) return toast(t('noFinish'))
   editor.stop()
   mode = raceMode ? 'race' : 'play'
   ensureMe()
@@ -157,7 +158,7 @@ function bankCoins(place) {
   let earned = 0
   let note = ''
   if (coins.isOwn(h)) {
-    if (fresh.length) note = '\n(na svojih progah kovanci ne štejejo)'
+    if (fresh.length) note = '\n' + t('ownNote')
   } else {
     earned += fresh.length
     store.set('taken.' + h, [...runTaken, ...fresh])
@@ -167,12 +168,12 @@ function bankCoins(place) {
     coins.wallet += earned
     sfx('buy')
   }
-  return earned ? `\n+${earned} 🪙 (skupaj ${coins.wallet})` + note : note
+  return earned ? '\n' + t('earned', { n: earned, total: coins.wallet }) + note : note
 }
 
 function startEdit() {
-  if (mode === 'race') return toast('Med dirko ne moreš urejati 😉')
-  if (input.touch) return toast('Urejevalnik zaenkrat deluje samo na računalniku 💻')
+  if (mode === 'race') return toast(t('noEditRace'))
+  if (input.touch) return toast(t('editorDesktop'))
   mode = 'edit'
   if (me) me.setVisible(false)
   levelView.coinState.clear()
@@ -192,13 +193,17 @@ function enterGame() {
   $('hud').classList.toggle('edit', mode === 'edit')
   $('hotbar').hidden = mode !== 'edit'
   $('timer').hidden = mode === 'edit'
-  $('help').textContent = input.touch ? '' : mode === 'edit'
-    ? 'Desni klik: postavi · Levi klik: pobriši · E: preizkusi · Esc: meni'
-    : 'Space: skok · R: znova · 1–4: emoti' + (mode === 'play' ? ' · E: urejevalnik' : '') + ' · Esc: meni'
+  updateHelp()
   $('levelName').textContent = level.name
   input.lock()
   // Če miške ni bilo mogoče ujeti (npr. dirko je začel prijatelj), prosimo za klik
-  setTimeout(() => !input.locked && $('menu').hidden && toast('🖱 Klikni na zaslon!', 3000), 400)
+  setTimeout(() => !input.locked && $('menu').hidden && toast(t('clickScreen'), 3000), 400)
+}
+
+function updateHelp() {
+  // v igri (ne na dirki) dodamo še "E: urejevalnik" pred zadnji del (Esc: meni)
+  $('help').textContent = input.touch ? '' : mode === 'edit' ? t('helpEdit')
+    : t('helpPlay').replace(/ · [^·]*$/, (esc) => (mode === 'play' ? t('helpE') : '') + esc)
 }
 
 function showMenu() {
@@ -237,8 +242,8 @@ function restart() {
 }
 
 function emote(n) {
-  me.say(EMOTES[n])
-  net?.sendEmote(EMOTES[n])
+  me.say(emoteText(n))
+  net?.sendEmote(n)
 }
 
 // Kontrole za telefon
@@ -247,7 +252,7 @@ setupTouch(input, {
   restart,
   emote,
   menu: () => showMenu(),
-}, EMOTES)
+}, Array.from({ length: EMOTE_COUNT }, (_, i) => emoteText(i)))
 document.body.classList.toggle('touch', input.touch)
 
 // Za razhroščevanje v konzoli brskalnika (samo med razvojem): obby.player.pos
@@ -311,7 +316,7 @@ function updatePlayer(dt) {
     const before = Math.ceil(countdown)
     countdown -= dt
     const now = Math.ceil(countdown)
-    $('countdown').textContent = countdown > 0 ? now : 'GO!'
+    $('countdown').textContent = countdown > 0 ? now : t('go')
     if (now !== before) sfx(countdown > 0 ? 'tick' : 'go')
     if (countdown <= 0) {
       running = true
@@ -405,8 +410,8 @@ function handleEvent(ev) {
   if (ev === 'jump') particles.burst(feet, FX.dust)
   if (ev === 'land') particles.burst(feet, FX.land)
   if (ev === 'bounce') { sfx('bounce'); particles.burst(feet, FX.bounce) }
-  if (ev === 'boost') { sfx('boost'); toast('⚡ Pospešek!') }
-  if (ev === 'checkpoint') { sfx('checkpoint'); toast('✅ Kontrolna točka'); particles.burst(feet, FX.checkpoint) }
+  if (ev === 'boost') { sfx('boost'); toast(t('boost')) }
+  if (ev === 'checkpoint') { sfx('checkpoint'); toast(t('checkpoint')); particles.burst(feet, FX.checkpoint) }
   if (ev === 'finish' && !finished && running) {
     finished = true
     sfx('finish')
@@ -418,19 +423,19 @@ function handleEvent(ev) {
         sfx('pop')
       }, i * 280)
     }
-    const t = runTime
+    const myTime = runTime
     // uvrstitev na dirki (nagrada samo, če so v sobi še drugi)
     const place = mode === 'race' && remotes.size > 0 ? results.size + 1 : 0
     const coinText = bankCoins(place)
     // osebni rekord za to progo
     const bestKey = 'best.' + level.contentHash()
     const best = store.get(bestKey, null)
-    const record = best === null || t < best
-    if (record) store.set(bestKey, t)
-    toast(`🏁 CILJ! ${formatTime(t)}` + (record ? '\n⭐ Nov rekord!' : `\nRekord: ${formatTime(best)}`) + coinText, 4500)
+    const record = best === null || myTime < best
+    if (record) store.set(bestKey, myTime)
+    toast(t('finish', { time: formatTime(myTime) }) + '\n' + (record ? t('record') : t('best', { time: formatTime(best) })) + coinText, 4500)
     if (mode === 'race') {
-      net?.sendFinish({ round: race.round, time: t })
-      addResult('me', profile.name || 'Jaz', t)
+      net?.sendFinish({ round: race.round, time: myTime })
+      addResult('me', profile.name || t('me'), myTime)
     }
   }
 }
@@ -466,7 +471,7 @@ function updateRemotes(dt) {
 const netEvents = {
   onProfile(userId, p) {
     const r = getRemote(userId)
-    r.profile = { name: String(p.name || 'Igralec').slice(0, 16), color: String(p.color || '#888'), hat: HATS.includes(p.hat) ? p.hat : 'brez' }
+    r.profile = { name: String(p.name || t('player')).slice(0, 16), color: String(p.color || '#888'), hat: HATS.includes(p.hat) ? p.hat : 'brez' }
     const wasVisible = r.avatar.group.visible
     const pos = r.avatar.group.position.clone()
     r.avatar.dispose()
@@ -494,8 +499,8 @@ const netEvents = {
     r.ground = !!ground
     r.seen = performance.now()
   },
-  onEmote(userId, text) {
-    if (EMOTES.includes(text)) getRemote(userId).avatar.say(text)
+  onEmote(userId, n) {
+    if (Number.isInteger(n) && n >= 0 && n < EMOTE_COUNT) getRemote(userId).avatar.say(emoteText(n))
   },
   async onRace(value) {
     if (!value || value.round <= race.round) return
@@ -506,16 +511,16 @@ const netEvents = {
       const l = await Level.fromCode(value.level)
       setLevel(l)
       startPlay(true)
-      toast(`🏁 Dirka: ${l.name}\n(začel/a ${value.by})`, 2500)
+      toast(t('raceStart', { name: l.name, by: value.by }), 2500)
     } catch (e) {
-      toast('Proge za dirko ni bilo mogoče naložiti 😕')
+      toast(t('raceFail'))
     }
   },
   onFinish(userId, d) {
     if (!d || d.round !== race.round || !Number.isFinite(d.time)) return
     const r = remotes.get(userId)
-    addResult(userId, r ? r.profile.name : 'Igralec', d.time)
-    if (mode === 'race') toast(`🏁 ${r ? r.profile.name : 'Nekdo'} je v cilju!`, 1500)
+    addResult(userId, r ? r.profile.name : t('player'), d.time)
+    if (mode === 'race') toast(t('otherFinished', { name: r ? r.profile.name : t('someone') }), 1500)
   },
 }
 
@@ -529,7 +534,7 @@ function renderResults() {
   box.hidden = mode !== 'race' || results.size === 0
   const list = [...results.values()].sort((a, b) => a.time - b.time)
   const medals = ['🥇', '🥈', '🥉']
-  box.innerHTML = '<h3>Rezultati</h3><ol>' +
+  box.innerHTML = `<h3>${t('results')}</h3><ol>` +
     list.map((r, i) => `<li>${medals[i] || ''} ${escapeHtml(r.name)} – ${formatTime(r.time)}</li>`).join('') + '</ol>'
 }
 
@@ -537,6 +542,15 @@ function renderResults() {
 //  MENI
 // ============================================================
 function initMenu() {
+  // --- jezik ---
+  applyDom()
+  for (const [code, name] of Object.entries(LANGS)) $('langSelect').add(new Option(name, code))
+  $('langSelect').value = lang
+  $('langSelect').onchange = (e) => {
+    setLang(e.target.value)
+    refreshTexts()
+  }
+
   // --- lik ---
   $('nameInput').value = profile.name
   $('nameInput').addEventListener('input', (e) => {
@@ -570,7 +584,7 @@ function initMenu() {
 
   // --- proga ---
   $('levelNameInput').addEventListener('input', (e) => {
-    level.name = e.target.value || 'Proga'
+    level.name = e.target.value || t('trackDefault')
     saveCurrentSoon()
   })
   $('playBtn').onclick = () => startPlay()
@@ -587,15 +601,15 @@ function initMenu() {
     $('codeOkBtn').hidden = true
     try {
       await navigator.clipboard.writeText(link)
-      $('codeMsg').textContent = 'Povezava je kopirana – pošlji jo prijatelju!'
+      $('codeMsg').textContent = t('linkCopied')
     } catch {
-      $('codeMsg').textContent = 'Kopiraj povezavo zgoraj in jo pošlji prijatelju.'
+      $('codeMsg').textContent = t('linkCopy')
     }
   }
   $('loadBtn').onclick = () => {
     $('shareBox').hidden = false
     $('codeArea').value = ''
-    $('codeArea').placeholder = 'Prilepi kodo proge (OBBY-...) ali povezavo'
+    $('codeArea').placeholder = t('pastePh')
     $('codeOkBtn').hidden = false
     $('codeMsg').textContent = ''
     $('codeArea').focus()
@@ -603,12 +617,12 @@ function initMenu() {
   $('codeOkBtn').onclick = async () => {
     try {
       setLevel(await Level.fromCode($('codeArea').value))
-      $('codeMsg').textContent = `Naložena proga »${level.name}« (${level.size} kock)`
+      $('codeMsg').textContent = t('loadedN', { name: level.name, n: level.size })
       editor.history = []
       lastMode = null
       $('resumeBtn').hidden = true
     } catch (e) {
-      $('codeMsg').textContent = '❌ ' + (e.message.startsWith('To ni') ? e.message : 'Koda ni pravilna')
+      $('codeMsg').textContent = '❌ ' + (e.message === 'NOT_CODE' ? t('notCode') : t('badCode'))
     }
   }
   $('saveBtn').onclick = async () => {
@@ -616,10 +630,10 @@ function initMenu() {
     saved[level.name] = await level.toCode()
     store.set('levels', saved)
     renderSaved()
-    toastMenu('💾 Shranjeno')
+    toastMenu(t('saved'))
   }
   $('newBtn').onclick = () => {
-    const l = new Level('Nova proga')
+    const l = new Level(t('newTrack'))
     for (let x = -2; x <= 2; x++) for (let z = -2; z <= 2; z++) l.set(x, 0, z, 2)
     l.set(0, 0, 0, 9)
     setLevel(l)
@@ -628,7 +642,7 @@ function initMenu() {
     startEdit()
   }
   $('sampleBtn').onclick = () => {
-    setLevel(sampleLevel())
+    setLevel(sampleLevel(t('sampleName')))
     lastMode = null
     $('resumeBtn').hidden = true
   }
@@ -643,18 +657,18 @@ function initMenu() {
   $('roomInput').addEventListener('keydown', (e) => e.key === 'Enter' && $('joinRoomBtn').click())
   $('leaveRoomBtn').onclick = leaveRoom
   $('raceBtn').onclick = async () => {
-    if (!level.find(9) || !level.find(11)) return toastMenu('Proga potrebuje start in cilj!')
-    net.startRace(await level.toCode(), level.name, profile.name || 'Nekdo')
+    if (!level.find(9) || !level.find(11)) return toastMenu(t('needStartFinish'))
+    net.startRace(await level.toCode(), level.name, profile.name || t('someone'))
   }
 
   // --- hotbar urejevalnika ---
-  HOTBAR.forEach((t, i) => {
+  HOTBAR.forEach((type, i) => {
     const s = document.createElement('div')
     s.className = 'slot'
-    s.style.background = '#' + BLOCKS[t].color.toString(16).padStart(6, '0')
-    s.innerHTML = `<b>${['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '[', ']', '\\'][i]}</b>` +
-      (BLOCKS[t].move ? `<span>${{ x: '↔', z: '↕', y: '⇅' }[BLOCKS[t].move]}</span>` : '')
-    s.title = BLOCKS[t].name
+    s.style.background = '#' + BLOCKS[type].color.toString(16).padStart(6, '0')
+    s.innerHTML = `<b>${['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '[', ']', '\\', "'"][i]}</b>` +
+      (BLOCKS[type].move ? `<span>${{ x: '↔', z: '↕', y: '⇅' }[BLOCKS[type].move]}</span>` : '')
+    s.title = blockName(type)
     $('hotbar').append(s)
   })
   const nameEl = document.createElement('div')
@@ -662,8 +676,20 @@ function initMenu() {
   $('hud').append(nameEl)
   editor.onSelect = (i) => {
     document.querySelectorAll('.slot').forEach((s, j) => s.classList.toggle('sel', i === j))
-    nameEl.textContent = mode === 'edit' ? BLOCKS[HOTBAR[i]].name : ''
+    nameEl.textContent = mode === 'edit' ? blockName(HOTBAR[i]) : ''
   }
+}
+
+// Ko zamenjaš jezik, osvežimo besedila, ki jih ustvari koda
+function refreshTexts() {
+  renderHats()
+  renderSaved()
+  renderResults()
+  if (net) renderPlayers()
+  if (mode !== 'menu') updateHelp()
+  document.querySelectorAll('.slot').forEach((s) => (s.title = blockName(+s.dataset.block)))
+  document.querySelectorAll('#touch [data-e]').forEach((b) => (b.textContent = emoteText(+b.dataset.e)))
+  editor.onSelect(editor.selected)
 }
 
 // Trgovina s klobuki
@@ -671,20 +697,20 @@ function renderHats() {
   $('wallet').textContent = `🪙 ${coins.wallet}`
   const box = $('hats')
   box.innerHTML = ''
-  for (const id of HATS) {
-    const h = HAT_INFO[id]
+  for (const [index, id] of HATS.entries()) {
+    const h = { ...HAT_INFO[id], label: hatName(index) }
     const owned = ownedHats.has(id)
     const b = document.createElement('button')
     b.className = 'hat' + (profile.hat === id ? ' sel' : '') + (owned ? '' : ' locked')
-    b.innerHTML = `<span>${h.icon}</span>${h.label}<small>${owned ? (profile.hat === id ? 'nosiš' : 'tvoj') : '🔒 ' + h.price + ' 🪙'}</small>`
+    b.innerHTML = `<span>${h.icon}</span>${h.label}<small>${owned ? (profile.hat === id ? t('wearing') : t('owned')) : '🔒 ' + h.price + ' 🪙'}</small>`
     b.onclick = () => {
       if (!owned) {
-        if (coins.wallet < h.price) return toastMenu(`Za ${h.label} manjka še ${h.price - coins.wallet} 🪙 – poberi kovance na progah!`)
+        if (coins.wallet < h.price) return toastMenu(t('needCoins', { hat: h.label, n: h.price - coins.wallet }))
         coins.wallet -= h.price
         ownedHats.add(id)
         store.set('hats', [...ownedHats])
         sfx('buy')
-        toastMenu(`🎉 Kupil/a si: ${h.label}!`)
+        toastMenu(t('bought', { hat: h.label }))
       }
       profile.hat = id
       saveProfile()
@@ -701,7 +727,7 @@ function renderSaved() {
   for (const [name, code] of Object.entries(saved)) {
     const b = document.createElement('button')
     b.textContent = '📁 ' + name
-    b.title = 'Naloži (Shift+klik: izbriši)'
+    b.title = t('savedTip')
     b.onclick = async (e) => {
       if (e.shiftKey) {
         delete saved[name]
@@ -712,7 +738,7 @@ function renderSaved() {
       editor.history = []
       lastMode = null
       $('resumeBtn').hidden = true
-      toastMenu(`Naložena »${name}«`)
+      toastMenu(t('loadedName', { name }))
     }
     box.append(b)
   }
@@ -727,7 +753,7 @@ function saveProfile() {
 function joinRoomCode(code) {
   if (net) leaveRoom()
   if (!profile.name) {
-    profile.name = 'Igralec' + Math.floor(Math.random() * 100)
+    profile.name = t('player') + Math.floor(Math.random() * 100)
     $('nameInput').value = profile.name
     saveProfile()
   }
@@ -753,11 +779,11 @@ function leaveRoom() {
 
 function renderPlayers() {
   const ul = $('playerList')
-  ul.innerHTML = `<li><i style="background:${profile.color}"></i>${escapeHtml(profile.name || 'Jaz')} (ti)</li>`
+  ul.innerHTML = `<li><i style="background:${profile.color}"></i>${escapeHtml(profile.name || t('me'))} ${t('you')}</li>`
   for (const r of remotes.values()) {
     ul.innerHTML += `<li><i style="background:${escapeHtml(r.profile.color)}"></i>${escapeHtml(r.profile.name)}</li>`
   }
-  if (!remotes.size) ul.innerHTML += '<li class="muted">Čakam na prijatelje …</li>'
+  if (!remotes.size) ul.innerHTML += `<li class="muted">${t('waiting')}</li>`
 }
 
 // ============================================================
@@ -808,13 +834,13 @@ async function boot() {
     if (h.startsWith('#proga=')) {
       setLevel(await Level.fromCode(h.slice(7)))
       history.replaceState(null, '', location.pathname)
-      toastMenu(`Naložena proga »${level.name}« iz povezave 🎉`)
+      toastMenu(t('loadedLink', { name: level.name }))
     } else {
       const saved = store.get('current', null)
-      setLevel(saved ? await Level.fromCode(saved) : sampleLevel())
+      setLevel(saved ? await Level.fromCode(saved) : sampleLevel(t('sampleName')))
     }
   } catch {
-    setLevel(sampleLevel())
+    setLevel(sampleLevel(t('sampleName')))
   }
   if (h.startsWith('#soba=')) $('roomInput').value = h.slice(6, 10)
 

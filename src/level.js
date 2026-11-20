@@ -119,7 +119,7 @@ export class Level {
 
   static async fromCode(code) {
     code = code.trim().replace(/^.*#proga=/, '') // dovoli tudi celo povezavo
-    if (!code.startsWith('OBBY-')) throw new Error('To ni koda proge (mora se začeti z OBBY-)')
+    if (!code.startsWith('OBBY-')) throw new Error('NOT_CODE') // prevod v main.js
     const bytes = await decompress(fromBase64Url(code.slice(5)))
     const data = JSON.parse(new TextDecoder().decode(bytes))
     const level = new Level(String(data.n || 'Proga').slice(0, 40))
@@ -153,8 +153,8 @@ function fromBase64Url(str) {
 // ============================================================
 //  Vzorčna proga, da je takoj kaj za igrati
 // ============================================================
-export function sampleLevel() {
-  const L = new Level('Prva proga')
+export function sampleLevel(name = 'Prva proga') {
+  const L = new Level(name)
   const plat = (x0, y, z0, w, d, type) => {
     for (let x = x0; x < x0 + w; x++) for (let z = z0; z < z0 + d; z++) L.set(x, y, z, type)
   }

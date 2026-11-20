@@ -38,7 +38,7 @@ export class Net {
 
     // Emoti (oblački nad glavo)
     this.emoteAction = this.room.makeAction('emote')
-    this.emoteAction.onMessage((text, { userId }) => events.onEmote(userId, String(text).slice(0, 30)))
+    this.emoteAction.onMessage((n, { userId }) => events.onEmote(userId, n)) // n = številka emota
 
     // Dirka: skupno stanje sobe (katera proga, kateri krog). Kdorkoli lahko začne novo dirko.
     this.race = this.room.makeState('race', null, { maxBytes: 65536 })

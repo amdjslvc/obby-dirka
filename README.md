@@ -77,6 +77,13 @@ V urejevalniku mirujejo, v igri pa se premikajo.
   (samo če je v sobi vsaj še en igralec).
 - Za kovance v meniju kupuješ klobuke. Cene so v `HAT_INFO` v `src/world.js`.
 
+## Jeziki
+
+Igra govori 12 jezikov: slovensko, angleško, nemško, francosko, špansko, italijansko,
+portugalsko, rusko, kitajsko, japonsko, hindijsko in arabsko. Jezik se izbere sam po
+nastavitvi brskalnika, zamenjaš pa ga lahko v meniju zgoraj.
+Vsa besedila so v `src/i18n.js` – nov jezik dodaš tako, da skopiraš blok `en` in ga prevedeš.
+
 ## Kako je narejena (kje kaj najdeš)
 
 | Datoteka | Kaj je v njej |
@@ -90,6 +97,9 @@ V urejevalniku mirujejo, v igri pa se premikajo.
 | `src/touch.js` | kontrole za telefon (joystick, skok) |
 | `src/movers.js` | premikajoče se platforme |
 | `src/sound.js` | zvoki, narejeni s kodo |
+| `src/music.js` | glasba (note so v tabelah – kar spreminjaj!) |
+| `src/fx.js` | delci: iskrice, prah, konfeti, ognjemet |
+| `src/i18n.js` | prevodi v 12 jezikov |
 
 JavaScript je podoben Pythonu: `function` je `def`, `{ }` zamenja zamik,
 `const`/`let` ustvari spremenljivko, `//` je komentar (kot `#`).
