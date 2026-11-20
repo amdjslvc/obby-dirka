@@ -250,9 +250,10 @@ function updatePlayer(dt) {
   landing.visible = !!below
   if (below) landing.position.set(player.pos.x, below.y + 0.51, player.pos.z)
 
-  // --- telefon: kamera se sama obrne za likom, ko teče naprej ---
-  const fwd = Math.max(0, input.move.forward)
-  if (input.touch && !frozen && fwd > 0 && time - lastLook > 0.8) {
+  // --- telefon: kamera se sama obrne za likom, a samo pri teku (skoraj) naravnost naprej ---
+  const { forward: fwd, right: side } = input.move
+  const straight = fwd > 0.5 && Math.abs(side) < fwd * 0.4 // joystick nagnjen največ ~20° od naprej
+  if (input.touch && !frozen && straight && time - lastLook > 0.8) {
     const target = player.yaw + Math.PI
     const d = Math.atan2(Math.sin(target - cam.yaw), Math.cos(target - cam.yaw))
     cam.yaw += d * Math.min(1, dt * 2.5 * fwd * Math.min(1, player.horizontalSpeed / 4))
