@@ -13,6 +13,7 @@
   <!-- ===== HUD med igro ===== -->
   <div id="hud" hidden>
     <div id="timer">0:00.00</div>
+    <div id="coinHud" hidden></div>
     <div id="levelName"></div>
     <div id="toast"></div>
     <div id="countdown"></div>
@@ -32,12 +33,12 @@
       <p id="menuMsg" class="muted"></p>
 
       <section>
-        <h2>Tvoj lik</h2>
+        <h2>Tvoj lik <span id="wallet" class="wallet"></span></h2>
         <div class="row">
           <input id="nameInput" maxlength="16" placeholder="Tvoje ime" />
-          <select id="hatSelect"></select>
         </div>
         <div id="skins" class="row"></div>
+        <div id="hats" class="hats"></div>
       </section>
 
       <section>

@@ -191,7 +191,8 @@ export class Player {
       for (let y = cell(y0); y <= cell(y1 - EPS); y++)
         for (let z = cell(z0); z <= cell(z1 - EPS); z++) {
           const t = this.level.get(x, y, z)
-          if (t && !BLOCKS[t].move) out.push([x, y, z, t]) // premične kocke niso na svojem mestu
+          // premične kocke niso na svojem mestu, kovanci pa niso trdni
+          if (t && !BLOCKS[t].move && BLOCKS[t].solid !== false) out.push([x, y, z, t])
         }
     // premične platforme (na trenutnem položaju)
     for (const m of this.movers) {
@@ -209,6 +210,17 @@ export class Player {
       for (const p of ['kill', 'ice', 'bounce', 'speed', 'finish', 'checkpoint']) if (BLOCKS[b[3]][p]) props.add(p)
     }
     return props
+  }
+
+  // Kovanci, ki se jih dotikamo (vrne seznam "x,y,z")
+  coinsTouched() {
+    const cell = (v) => Math.floor(v + 0.5)
+    const out = []
+    for (let x = cell(this.pos.x - HALF_W); x <= cell(this.pos.x + HALF_W); x++)
+      for (let y = cell(this.pos.y); y <= cell(this.pos.y + HEIGHT); y++)
+        for (let z = cell(this.pos.z - HALF_W); z <= cell(this.pos.z + HALF_W); z++)
+          if (BLOCKS[this.level.get(x, y, z)]?.coin) out.push(`${x},${y},${z}`)
+    return out
   }
 
   checkpointsUnder() {

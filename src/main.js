@@ -3,7 +3,7 @@
 // ============================================================
 import * as THREE from 'three'
 import { Level, BLOCKS, HOTBAR, sampleLevel } from './level.js'
-import { createScene, LevelView, Avatar, SKINS, HATS } from './world.js'
+import { createScene, LevelView, Avatar, SKINS, HATS, HAT_INFO } from './world.js'
 import { Player, PHYSICS } from './player.js'
 import { Input } from './input.js'
 import { Editor } from './editor.js'
@@ -59,6 +59,26 @@ let running = false // ali teče štoparica
 let finished = false
 let countdown = 0
 
+// ---------- kovanci ----------
+// wallet: koliko kovancev imaš; taken.<proga>: kateri kovanci na progi so že bili izplačani;
+// own: proge, ki si jih urejal sam (tam se kovanci ne štejejo)
+const coins = {
+  get wallet() { return store.get('wallet', 0) },
+  set wallet(v) { store.set('wallet', v) },
+  taken: (h) => new Set(store.get('taken.' + h, [])),
+  isOwn: (h) => store.get('own', []).includes(h),
+  markOwn(h) {
+    const own = store.get('own', [])
+    if (own.includes(h)) return
+    own.push(h)
+    store.set('own', own.slice(-500))
+  },
+}
+const runCoins = new Set() // kovanci, pobrani v tem teku
+let runTaken = new Set() // kovanci te proge, ki so bili izplačani že prej
+let ownedHats = new Set(store.get('hats', ['brez', 'kapa']))
+if (!ownedHats.has(profile.hat)) profile.hat = 'brez'
+
 // soba
 let net = null
 const remotes = new Map() // userId -> { avatar, profile, target, yaw, speed, ground, seen }
@@ -82,7 +102,10 @@ function saveCurrentSoon() {
   saveTimer = setTimeout(async () => store.set('current', await level.toCode()), 500)
 }
 
-editor.onChange = saveCurrentSoon
+editor.onChange = () => {
+  coins.markOwn(level.contentHash()) // to progo si urejal sam
+  saveCurrentSoon()
+}
 
 // ============================================================
 //  NAČINI: igra, urejevalnik, dirka
@@ -108,7 +131,39 @@ function startPlay(raceMode = false) {
   countdown = raceMode ? 3 : 0
   if (raceMode) results.clear()
   renderResults()
+  // kovanci: že izplačani so prosojni, ostali zlati
+  runCoins.clear()
+  runTaken = coins.taken(level.contentHash())
+  levelView.coinState.clear()
+  for (const k of runTaken) levelView.setCoinState(k, 'ghost')
+  updateCoinHud()
   enterGame()
+}
+
+function updateCoinHud() {
+  const total = levelView.coins.length
+  $('coinHud').hidden = total === 0 || mode === 'edit'
+  $('coinHud').textContent = `🪙 ${runCoins.size}/${total}`
+}
+
+// Na cilju: pobrani kovanci gredo v denarnico (+ nagrada za uvrstitev na dirki)
+function bankCoins(place) {
+  const h = level.contentHash()
+  const fresh = [...runCoins].filter((k) => !runTaken.has(k))
+  let earned = 0
+  let note = ''
+  if (coins.isOwn(h)) {
+    if (fresh.length) note = '\n(na svojih progah kovanci ne štejejo)'
+  } else {
+    earned += fresh.length
+    store.set('taken.' + h, [...runTaken, ...fresh])
+  }
+  if (place) earned += [10, 6, 4][place - 1] || 2
+  if (earned) {
+    coins.wallet += earned
+    sfx('buy')
+  }
+  return earned ? `\n+${earned} 🪙 (skupaj ${coins.wallet})` + note : note
 }
 
 function startEdit() {
@@ -116,6 +171,8 @@ function startEdit() {
   if (input.touch) return toast('Urejevalnik zaenkrat deluje samo na računalniku 💻')
   mode = 'edit'
   if (me) me.setVisible(false)
+  levelView.coinState.clear()
+  $('coinHud').hidden = true
   // kamero postavimo za igralca/start
   const s = level.find(9) || [0, 0, 0]
   if (lastMode !== 'edit') editor.pos.set(s[0], s[1] + 4, s[2] - 8)
@@ -141,6 +198,7 @@ function enterGame() {
 
 function showMenu() {
   $('menu').hidden = false
+  renderHats()
   $('resumeBtn').hidden = !lastMode
   input.unlock()
 }
@@ -246,12 +304,21 @@ function updatePlayer(dt) {
   for (const ev of player.events) handleEvent(ev)
   player.events.length = 0
 
+  // --- kovanci ---
+  for (const key of player.coinsTouched()) {
+    if (runCoins.has(key) || finished) continue
+    runCoins.add(key)
+    levelView.setCoinState(key, 'hidden')
+    sfx('coin')
+    updateCoinHud()
+  }
+
   if (running && !finished) runTime += dt
   $('timer').textContent = formatTime(runTime)
   me.update(dt, player.pos, player.yaw, player.horizontalSpeed, player.onGround)
 
   // --- senca pristanka (samo v zraku) ---
-  const below = player.onGround ? null : level.raycast(player.pos, DOWN, 40)
+  const below = player.onGround ? null : level.raycast(player.pos, DOWN, 40, (t) => BLOCKS[t].coin)
   landing.visible = !!below
   if (below) landing.position.set(player.pos.x, below.y + 0.51, player.pos.z)
 
@@ -271,7 +338,7 @@ function updatePlayer(dt) {
     -Math.sin(cam.pitch),
     Math.cos(cam.yaw) * Math.cos(cam.pitch)
   )
-  const hit = level.raycast(head, back, cam.dist, (t) => BLOCKS[t].glass)
+  const hit = level.raycast(head, back, cam.dist, (t) => BLOCKS[t].glass || BLOCKS[t].coin)
   const dist = hit ? Math.max(0.6, hit.dist - 0.3) : cam.dist
   camera.position.copy(head).addScaledVector(back, dist)
   camera.lookAt(head)
@@ -296,14 +363,15 @@ function handleEvent(ev) {
     finished = true
     sfx('finish')
     const t = runTime
+    // uvrstitev na dirki (nagrada samo, če so v sobi še drugi)
+    const place = mode === 'race' && remotes.size > 0 ? results.size + 1 : 0
+    const coinText = bankCoins(place)
     // osebni rekord za to progo
-    level.toCode().then((code) => {
-      const bestKey = 'best.' + hash(code)
-      const best = store.get(bestKey, null)
-      const record = best === null || t < best
-      if (record) store.set(bestKey, t)
-      toast(`🏁 CILJ! ${formatTime(t)}` + (record ? '\n⭐ Nov rekord!' : `\nRekord: ${formatTime(best)}`), 4000)
-    })
+    const bestKey = 'best.' + level.contentHash()
+    const best = store.get(bestKey, null)
+    const record = best === null || t < best
+    if (record) store.set(bestKey, t)
+    toast(`🏁 CILJ! ${formatTime(t)}` + (record ? '\n⭐ Nov rekord!' : `\nRekord: ${formatTime(best)}`) + coinText, 4500)
     if (mode === 'race') {
       net?.sendFinish({ round: race.round, time: t })
       addResult('me', profile.name || 'Jaz', t)
@@ -419,12 +487,7 @@ function initMenu() {
     profile.name = e.target.value.trim()
     saveProfile()
   })
-  for (const h of HATS) $('hatSelect').add(new Option('🎩 ' + h, h))
-  $('hatSelect').value = profile.hat
-  $('hatSelect').addEventListener('change', (e) => {
-    profile.hat = e.target.value
-    saveProfile()
-  })
+  renderHats()
   for (const c of SKINS) {
     const b = document.createElement('button')
     b.className = 'skin' + (c === profile.color ? ' sel' : '')
@@ -535,6 +598,34 @@ function initMenu() {
   }
 }
 
+// Trgovina s klobuki
+function renderHats() {
+  $('wallet').textContent = `🪙 ${coins.wallet}`
+  const box = $('hats')
+  box.innerHTML = ''
+  for (const id of HATS) {
+    const h = HAT_INFO[id]
+    const owned = ownedHats.has(id)
+    const b = document.createElement('button')
+    b.className = 'hat' + (profile.hat === id ? ' sel' : '') + (owned ? '' : ' locked')
+    b.innerHTML = `<span>${h.icon}</span>${h.label}<small>${owned ? (profile.hat === id ? 'nosiš' : 'tvoj') : '🔒 ' + h.price + ' 🪙'}</small>`
+    b.onclick = () => {
+      if (!owned) {
+        if (coins.wallet < h.price) return toastMenu(`Za ${h.label} manjka še ${h.price - coins.wallet} 🪙 – poberi kovance na progah!`)
+        coins.wallet -= h.price
+        ownedHats.add(id)
+        store.set('hats', [...ownedHats])
+        sfx('buy')
+        toastMenu(`🎉 Kupil/a si: ${h.label}!`)
+      }
+      profile.hat = id
+      saveProfile()
+      renderHats()
+    }
+    box.append(b)
+  }
+}
+
 function renderSaved() {
   const saved = store.get('levels', {})
   const box = $('savedList')
@@ -630,12 +721,6 @@ function formatTime(t) {
   const m = Math.floor(t / 60)
   const s = (t % 60).toFixed(2).padStart(5, '0')
   return `${m}:${s}`
-}
-
-function hash(str) {
-  let h = 0
-  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0
-  return (h >>> 0).toString(36)
 }
 
 function escapeHtml(s) {

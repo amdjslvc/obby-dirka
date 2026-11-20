@@ -94,6 +94,10 @@ export class LevelView {
     this.scene = scene
     this.meshes = []
     this.geo = new THREE.BoxGeometry(1, 1, 1)
+    this.coinGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.08, 20).rotateX(Math.PI / 2)
+    this.coinMat = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.6, roughness: 0.3, emissive: 0x664400, emissiveIntensity: 0.5 })
+    this.coinState = new Map()
+    this.coins = []
     this.materials = {}
     const tex = blockTexture()
     const checkerTex = blockTexture(true)
@@ -117,7 +121,11 @@ export class LevelView {
     }
     this.meshes = []
     const byType = {}
-    for (const [x, y, z, t] of level.blocks()) if (!BLOCKS[t].move) (byType[t] ||= []).push([x, y, z])
+    const coins = []
+    for (const [x, y, z, t] of level.blocks()) {
+      if (BLOCKS[t].coin) coins.push({ key: `${x},${y},${z}`, x, y, z })
+      else if (!BLOCKS[t].move) (byType[t] ||= []).push([x, y, z])
+    }
     const mat = new THREE.Matrix4()
     for (const [t, list] of Object.entries(byType)) {
       const mesh = new THREE.InstancedMesh(this.geo, this.materials[t], list.length)
@@ -142,6 +150,23 @@ export class LevelView {
       this.moverMeshes.push({ mesh, list })
     }
     this.updateMovers(null)
+
+    // Kovanci: vrtljivi zlati kolački
+    this.coins = coins
+    this.coinMesh = null
+    if (coins.length) {
+      this.coinMesh = new THREE.InstancedMesh(this.coinGeo, this.coinMat, coins.length)
+      this.coinMesh.castShadow = true
+      this.coinMesh.frustumCulled = false
+      this.scene.add(this.coinMesh)
+      this.meshes.push(this.coinMesh)
+    }
+  }
+
+  // Stanje kovanca: 'gold' (še ni pobran), 'ghost' (pobran že prej), 'hidden' (pobran v tem teku)
+  setCoinState(key, state) {
+    if (state === 'gold') this.coinState.delete(key)
+    else this.coinState.set(key, state)
   }
 
   // t = čas (null = vse na začetnem mestu, npr. v urejevalniku)
@@ -158,6 +183,20 @@ export class LevelView {
   animate(time) {
     this.materials[6].emissiveIntensity = 0.7 + Math.sin(time * 4) * 0.25
     this.materials[10].emissiveIntensity = 0.3 + Math.sin(time * 3) * 0.15
+    if (!this.coinMesh) return
+    const m = new THREE.Matrix4(), q = new THREE.Quaternion(), p = new THREE.Vector3(), s = new THREE.Vector3()
+    const gold = new THREE.Color(0xffcc33), ghost = new THREE.Color(0x8fa3c0)
+    const up = new THREE.Vector3(0, 1, 0)
+    this.coins.forEach((c, i) => {
+      const state = this.coinState.get(c.key) || 'gold'
+      p.set(c.x, c.y + Math.sin(time * 2 + c.x + c.z) * 0.1, c.z)
+      q.setFromAxisAngle(up, time * 2.5 + c.x)
+      s.setScalar(state === 'hidden' ? 0 : 1)
+      this.coinMesh.setMatrixAt(i, m.compose(p, q, s))
+      this.coinMesh.setColorAt(i, state === 'ghost' ? ghost : gold)
+    })
+    this.coinMesh.instanceMatrix.needsUpdate = true
+    this.coinMesh.instanceColor.needsUpdate = true
   }
 }
 
@@ -165,7 +204,19 @@ export class LevelView {
 //  Lik (avatar) – kockast možiček z imenom nad glavo
 // ============================================================
 export const SKINS = ['#ff4757', '#ffa502', '#ffd32a', '#2ed573', '#1e90ff', '#a55eea', '#ff6b81', '#2f3542']
-export const HATS = ['brez', 'kapa', 'krona', 'rogovi']
+// Klobuki: cena v kovancih (0 = zastonj)
+export const HAT_INFO = {
+  brez: { label: 'Brez', icon: '🙂', price: 0 },
+  kapa: { label: 'Kapa', icon: '🧢', price: 0 },
+  usesa: { label: 'Mačja ušesa', icon: '🐱', price: 10 },
+  rogovi: { label: 'Rogovi', icon: '😈', price: 20 },
+  cilinder: { label: 'Cilinder', icon: '🎩', price: 30 },
+  carovnik: { label: 'Čarovnik', icon: '🧙', price: 45 },
+  propeler: { label: 'Propeler', icon: '🚁', price: 60 },
+  sij: { label: 'Svetniški sij', icon: '😇', price: 80 },
+  krona: { label: 'Krona', icon: '👑', price: 120 },
+}
+export const HATS = Object.keys(HAT_INFO)
 
 export class Avatar {
   constructor(scene, { name = '', color = SKINS[4], hat = 'brez' } = {}) {
@@ -198,7 +249,7 @@ export class Avatar {
     this.addHat(hat, color)
 
     this.label = makeLabel(name)
-    this.label.position.y = 2.25
+    this.label.position.y = 2.5
     this.group.add(this.label)
     this.bubble = null
     this.bubbleTimer = 0
@@ -209,10 +260,42 @@ export class Avatar {
 
   addHat(hat, color) {
     const m = new THREE.MeshStandardMaterial({ color: hat === 'krona' ? '#ffd700' : color, metalness: hat === 'krona' ? 0.6 : 0 })
-    const add = (geo, x, y, z) => {
-      const mesh = new THREE.Mesh(geo, m)
+    const add = (geo, x, y, z, mat = m) => {
+      const mesh = new THREE.Mesh(geo, mat)
       mesh.position.set(x, y, z)
+      mesh.castShadow = true
       this.group.add(mesh)
+      return mesh
+    }
+    const black = new THREE.MeshStandardMaterial({ color: '#1d1d24' })
+    const purple = new THREE.MeshStandardMaterial({ color: '#5b3cc4' })
+    const goldGlow = new THREE.MeshStandardMaterial({ color: '#ffe066', emissive: '#ffcc00', emissiveIntensity: 0.8 })
+    if (hat === 'usesa') {
+      const g = new THREE.ConeGeometry(0.1, 0.22, 4)
+      add(g, -0.17, 1.9, 0)
+      add(g, 0.17, 1.9, 0)
+    } else if (hat === 'cilinder') {
+      add(new THREE.CylinderGeometry(0.34, 0.34, 0.04, 20), 0, 1.82, 0, black)
+      add(new THREE.CylinderGeometry(0.22, 0.22, 0.38, 20), 0, 2.02, 0, black)
+    } else if (hat === 'carovnik') {
+      add(new THREE.CylinderGeometry(0.4, 0.4, 0.04, 20), 0, 1.82, 0, purple)
+      const cone = add(new THREE.ConeGeometry(0.26, 0.62, 16), 0, 2.13, 0, purple)
+      cone.rotation.z = 0.15
+    } else if (hat === 'propeler') {
+      add(new THREE.SphereGeometry(0.27, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), 0, 1.79, 0)
+      this.propeller = new THREE.Group()
+      this.propeller.position.y = 2.1
+      const blade = new THREE.BoxGeometry(0.6, 0.02, 0.09)
+      for (const [mat, rot] of [[goldGlow, 0], [black, Math.PI / 2]]) {
+        const b = new THREE.Mesh(blade, mat)
+        b.rotation.y = rot
+        this.propeller.add(b)
+      }
+      add(new THREE.CylinderGeometry(0.02, 0.02, 0.07), 0, 2.07, 0, black)
+      this.group.add(this.propeller)
+    } else if (hat === 'sij') {
+      const halo = add(new THREE.TorusGeometry(0.24, 0.035, 8, 24), 0, 2.08, 0, goldGlow)
+      halo.rotation.x = Math.PI / 2
     }
     if (hat === 'kapa') {
       add(new THREE.BoxGeometry(0.54, 0.15, 0.54), 0, 1.86, 0)
@@ -230,7 +313,7 @@ export class Avatar {
   say(text) {
     if (this.bubble) this.group.remove(this.bubble)
     this.bubble = makeLabel(text, true)
-    this.bubble.position.y = 2.75
+    this.bubble.position.y = 3.0
     this.group.add(this.bubble)
     this.bubbleTimer = 3
   }
@@ -240,6 +323,7 @@ export class Avatar {
     this.group.position.copy(pos)
     this.group.rotation.y = yaw
     this.walk += dt * speed * 1.8
+    if (this.propeller) this.propeller.rotation.y += dt * (6 + speed * 2)
     const swing = onGround ? Math.sin(this.walk) * Math.min(speed / 6, 1) * 0.8 : 0.5
     this.legL.rotation.x = swing
     this.legR.rotation.x = -swing

@@ -23,10 +23,12 @@ export const BLOCKS = {
   13: { name: 'Premična ↔ levo-desno', color: 0x8e6cff, move: 'x', glow: 0.15 },
   14: { name: 'Premična ↕ naprej-nazaj', color: 0x4f7dff, move: 'z', glow: 0.15 },
   15: { name: 'Dvigalo ⇅ gor-dol', color: 0xff8e3c, move: 'y', glow: 0.15 },
+  // Kovanec: ni trden, pobereš ga, ko greš skozi
+  16: { name: 'Kovanec 🪙', color: 0xffcc33, coin: true, solid: false },
 }
 
 // Vrstni red v orodni vrstici urejevalnika (tipke 1..9, 0, -, =)
-export const HOTBAR = [1, 2, 3, 4, 12, 5, 6, 7, 8, 10, 9, 11, 13, 14, 15]
+export const HOTBAR = [1, 2, 3, 4, 12, 5, 6, 7, 8, 10, 9, 11, 16, 13, 14, 15]
 
 const key = (x, y, z) => `${x},${y},${z}`
 
@@ -60,6 +62,14 @@ export class Level {
 
   get size() {
     return this.cells.size
+  }
+
+  // "Prstni odtis" vsebine proge (brez imena) – za kovance in rekorde
+  contentHash() {
+    const s = [...this.cells.entries()].map(([k, t]) => k + ':' + t).sort().join(';')
+    let h = 0
+    for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0
+    return (h >>> 0).toString(36)
   }
 
   clone() {
@@ -187,5 +197,8 @@ export function sampleLevel() {
   z += 6
   // Cilj
   plat(-2, 11, z, 5, 5, 11)
+  // Kovanci (nekateri so lahki, nekateri tvegani)
+  const coins = [[1, 1, 1], [0, 2, 7], [1, 4, 14], [0, 5, 18], [-2, 5, 20], [1, 5, 28], [0, 8, 32], [0, 10, 43], [0, 11, 54], [-1, 12, 61]]
+  for (const [x, y, w] of coins) if (!L.get(x, y, w)) L.set(x, y, w, 16)
   return L
 }

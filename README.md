@@ -42,7 +42,7 @@ Urejevalnik zaenkrat deluje samo na računalniku.
 | Ctrl | hitreje |
 | desni klik | postavi kocko |
 | levi klik | pobriši kocko |
-| kolešček, 1–9, 0, -, =, [, ], \\ | izberi kocko |
+| kolešček, 1–9, 0, -, =, [, ], \\, ' | izberi kocko |
 | Ctrl+Z | razveljavi |
 | E | preizkusi progo |
 
@@ -62,9 +62,20 @@ Urejevalnik zaenkrat deluje samo na računalniku.
 | 🟦 Premična ↕ | premika se naprej-nazaj (3 kocke) |
 | 🟧 Dvigalo ⇅ | premika se gor-dol (3 kocke) |
 
+| 🪙 Kovanec | poberi ga; šteje se, ko prideš na cilj |
+
 Premične kocke se vedno premikajo v pozitivni smeri od mesta, kamor jih postaviš.
 Sosednje kocke iste vrste se premikajo skupaj, zato lahko zgradiš večjo platformo.
 V urejevalniku mirujejo, v igri pa se premikajo.
+
+## Kovanci in klobuki
+
+- Kovance pobereš na progi, v denarnico pa gredo šele, **ko prideš na cilj**.
+- Vsak kovanec na progi se izplača samo enkrat. Že izplačani so pri naslednjem teku sivi.
+- Na **progah, ki si jih urejal sam, kovanci ne štejejo**. Za kovance igraj proge prijateljev!
+- Na dirki dobiš nagrado za uvrstitev: 1. mesto +10, 2. +6, 3. +4, ostali +2
+  (samo če je v sobi vsaj še en igralec).
+- Za kovance v meniju kupuješ klobuke. Cene so v `HAT_INFO` v `src/world.js`.
 
 ## Kako je narejena (kje kaj najdeš)
 
@@ -86,10 +97,10 @@ JavaScript je podoben Pythonu: `function` je `def`, `{ }` zamenja zamik,
 ## Ideje za nadaljevanje (od lažjih do težjih)
 
 1. V `PHYSICS` spremeni moč skoka ali gravitacijo in poskusi, kako se igra spremeni.
-2. Dodaj nov emote v `EMOTES` (main.js) in nov klobuk v `HATS` (world.js).
+2. Dodaj nov emote v `EMOTES` (main.js) in nov klobuk v `HAT_INFO` (world.js, obliko nariši v `addHat`).
 3. Dodaj novo kocko, npr. **lepljivo** (počasna hoja) ali **teleport**.
 4. Premične platforme z nastavljivo dolžino poti in hitrostjo (zdaj sta v `movers.js` za vse enaki).
-5. Kovanci na progi, za kovance pa odkleneš klobuke.
+5. Še več stvari za kovance: barve, sledi za likom, plesi.
 6. Urejevalnik na telefonu.
 
 ## Objava na internetu (brezplačno, GitHub Pages)
