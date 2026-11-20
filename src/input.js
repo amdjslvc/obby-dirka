@@ -11,6 +11,10 @@ export class Input {
     this.lookX = 0 // premik miške od zadnjega branja
     this.lookY = 0
     this.sensitivity = 0.0025
+    // Telefon/tablica: ni miške, igramo z dotiki (glej touch.js)
+    this.touch = matchMedia('(pointer: coarse)').matches
+    this.touchPlaying = false
+    this.touchMove = { forward: 0, right: 0 }
 
     window.addEventListener('keydown', (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
@@ -22,7 +26,7 @@ export class Input {
     window.addEventListener('blur', () => this.keys.clear())
 
     document.addEventListener('mousemove', (e) => {
-      if (!this.locked) return
+      if (document.pointerLockElement !== this.canvas) return // samo prava ujeta miška
       this.lookX += e.movementX
       this.lookY += e.movementY
     })
@@ -35,11 +39,21 @@ export class Input {
     }, { passive: true })
   }
 
+  // "locked" pomeni: igra je aktivna in sprejema vnos
   get locked() {
-    return document.pointerLockElement === this.canvas
+    return document.pointerLockElement === this.canvas || (this.touch && this.touchPlaying)
   }
 
   lock() {
+    if (this.touch) {
+      this.touchPlaying = true
+      // Na telefonu poskusimo celozaslonski način in ležeči zaslon
+      const el = document.documentElement
+      if (!document.fullscreenElement && el.requestFullscreen) {
+        el.requestFullscreen().then(() => screen.orientation?.lock?.('landscape')).catch(() => {})
+      }
+      return
+    }
     // requestPointerLock lahko vrne napako, če uporabnik prehitro klikne – ni hudega
     try {
       const p = this.canvas.requestPointerLock()
@@ -48,7 +62,9 @@ export class Input {
   }
 
   unlock() {
-    if (this.locked) document.exitPointerLock()
+    this.touchPlaying = false
+    this.touchMove = { forward: 0, right: 0 }
+    if (document.pointerLockElement === this.canvas) document.exitPointerLock()
   }
 
   onKey(h) { this.pressedHandlers.push(h) }
@@ -67,9 +83,10 @@ export class Input {
   }
 
   get move() {
+    const clamp = (v) => Math.max(-1, Math.min(1, v))
     return {
-      forward: (this.down('KeyW', 'ArrowUp') ? 1 : 0) - (this.down('KeyS', 'ArrowDown') ? 1 : 0),
-      right: (this.down('KeyD', 'ArrowRight') ? 1 : 0) - (this.down('KeyA', 'ArrowLeft') ? 1 : 0),
+      forward: clamp((this.down('KeyW', 'ArrowUp') ? 1 : 0) - (this.down('KeyS', 'ArrowDown') ? 1 : 0) + this.touchMove.forward),
+      right: clamp((this.down('KeyD', 'ArrowRight') ? 1 : 0) - (this.down('KeyA', 'ArrowLeft') ? 1 : 0) + this.touchMove.right),
     }
   }
 }

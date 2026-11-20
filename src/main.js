@@ -9,6 +9,7 @@ import { Input } from './input.js'
 import { Editor } from './editor.js'
 import { Net, newRoomCode } from './net.js'
 import { sfx } from './sound.js'
+import { setupTouch } from './touch.js'
 
 const $ = (id) => document.getElementById(id)
 const EMOTES = ['👋 Živjo!', '😂 Haha', '🏆 GG!', '⏳ Počakaj!']
@@ -95,6 +96,7 @@ function startPlay(raceMode = false) {
 
 function startEdit() {
   if (mode === 'race') return toast('Med dirko ne moreš urejati 😉')
+  if (input.touch) return toast('Urejevalnik zaenkrat deluje samo na računalniku 💻')
   mode = 'edit'
   if (me) me.setVisible(false)
   // kamero postavimo za igralca/start
@@ -111,7 +113,7 @@ function enterGame() {
   $('hud').classList.toggle('edit', mode === 'edit')
   $('hotbar').hidden = mode !== 'edit'
   $('timer').hidden = mode === 'edit'
-  $('help').textContent = mode === 'edit'
+  $('help').textContent = input.touch ? '' : mode === 'edit'
     ? 'Desni klik: postavi · Levi klik: pobriši · E: preizkusi · Esc: meni'
     : 'Space: skok · R: znova · 1–4: emoti' + (mode === 'play' ? ' · E: urejevalnik' : '') + ' · Esc: meni'
   $('levelName').textContent = level.name
@@ -139,19 +141,37 @@ input.onKey((e) => {
   if (!input.locked) return
   if (mode === 'play' || mode === 'race') {
     if (e.code === 'Space') player.pressJump()
-    if (e.code === 'KeyR' && mode === 'play') startPlay()
-    if (e.code === 'KeyR' && mode === 'race' && !finished) { player.respawn(); sfx('death') }
+    if (e.code === 'KeyR') restart()
     const n = ['Digit1', 'Digit2', 'Digit3', 'Digit4'].indexOf(e.code)
-    if (n >= 0) {
-      me.say(EMOTES[n])
-      net?.sendEmote(EMOTES[n])
-    }
+    if (n >= 0) emote(n)
   }
   if (e.code === 'KeyE') {
     if (mode === 'play') startEdit()
     else if (mode === 'edit') startPlay()
   }
 })
+
+function restart() {
+  if (mode === 'play') startPlay()
+  if (mode === 'race' && !finished) { player.respawn(); sfx('death') }
+}
+
+function emote(n) {
+  me.say(EMOTES[n])
+  net?.sendEmote(EMOTES[n])
+}
+
+// Kontrole za telefon
+setupTouch(input, {
+  jump: () => player.pressJump(),
+  restart,
+  emote,
+  menu: () => showMenu(),
+}, EMOTES)
+document.body.classList.toggle('touch', input.touch)
+
+// Za razhroščevanje v konzoli brskalnika (samo med razvojem): obby.player.pos
+if (import.meta.env.DEV) window.obby = { player, cam, get mode() { return mode } }
 
 // ============================================================
 //  GLAVNA ZANKA – teče ~60x na sekundo

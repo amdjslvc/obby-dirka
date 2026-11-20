@@ -93,3 +93,45 @@ summary { cursor: pointer; }
   .slot { width: 30px; height: 30px; }
   #timer { font-size: 1.4rem; }
 }
+
+/* ---------- Kontrole za telefon ---------- */
+#touch { display: none; }
+body.touch #touch { display: block; }
+#hud.edit #touch { display: none; }
+#touch { position: absolute; inset: 0; -webkit-touch-callout: none; }
+#touch .zone { position: absolute; top: 0; bottom: 0; width: 50%; pointer-events: auto; touch-action: none; }
+#touch .zone.left { left: 0; }
+#touch .zone.right { right: 0; }
+#touch .stick {
+  position: absolute; width: 120px; height: 120px; margin: -60px 0 0 -60px; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15); border: 3px solid rgba(255, 255, 255, 0.4); pointer-events: none;
+}
+#touch .knob {
+  position: absolute; left: 50%; top: 50%; width: 54px; height: 54px; margin: -27px 0 0 -27px;
+  border-radius: 50%; background: rgba(255, 255, 255, 0.75);
+}
+#touch .tbtn {
+  pointer-events: auto; touch-action: none; border-radius: 50%; border: 3px solid rgba(255, 255, 255, 0.5);
+  background: rgba(0, 0, 0, 0.3); color: #fff; padding: 0;
+}
+#touch .jump {
+  position: absolute; right: calc(28px + env(safe-area-inset-right, 0px)); bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+  width: 96px; height: 96px; font-size: 2.6rem;
+}
+#touch .jump:active { background: rgba(255, 255, 255, 0.35); }
+#touch .topbtns { position: absolute; top: calc(12px + env(safe-area-inset-top, 0px)); right: calc(12px + env(safe-area-inset-right, 0px)); display: flex; gap: 8px; }
+#touch .small { width: 46px; height: 46px; font-size: 1.3rem; }
+#touch .emotes {
+  position: absolute; top: calc(68px + env(safe-area-inset-top, 0px)); right: 12px; display: flex; flex-direction: column; gap: 6px;
+}
+#touch .emotes .tbtn { width: auto; border-radius: 12px; padding: 6px 12px; font-size: 1rem; }
+body.touch #levelName { top: calc(14px + env(safe-area-inset-top, 0px)); }
+body.touch #results { top: 70px; right: auto; left: 16px; }
+/* Na telefonu urejevalnika ni, meni pa je bolj kompakten */
+body.touch #editBtn, body.touch #newBtn { display: none; }
+@media (max-height: 500px) {
+  h1 { font-size: 1.8rem; margin-bottom: 6px; }
+  .panel { padding: 12px 18px; }
+  section { margin: 8px 0; padding-top: 8px; }
+  button.big { padding: 8px 18px; }
+}

@@ -26,6 +26,15 @@ Za igranje s prijatelji na drugih računalnikih mora biti igra objavljena na int
 | E | v urejevalnik |
 | Esc | meni |
 
+| Telefon | |
+|---|---|
+| levi palec | joystick (pojavi se, kjer se dotakneš) |
+| desni palec | vlečenje obrača kamero |
+| ⤒ | skok |
+| ↺ / 😀 / ☰ | znova / emoti / meni |
+
+Urejevalnik zaenkrat deluje samo na računalniku.
+
 | Urejevalnik | |
 |---|---|
 | WASD | letenje |
@@ -60,6 +69,7 @@ Za igranje s prijatelji na drugih računalnikih mora biti igra objavljena na int
 | `src/editor.js` | urejevalnik |
 | `src/net.js` | igranje s prijatelji (WebRTC prek knjižnice Trystero) |
 | `src/main.js` | meni, glavna zanka, dirke |
+| `src/touch.js` | kontrole za telefon (joystick, skok) |
 | `src/sound.js` | zvoki, narejeni s kodo |
 
 JavaScript je podoben Pythonu: `function` je `def`, `{ }` zamenja zamik,
@@ -72,7 +82,7 @@ JavaScript je podoben Pythonu: `function` je `def`, `{ }` zamenja zamik,
 3. Dodaj novo kocko, npr. **lepljivo** (počasna hoja) ali **teleport**.
 4. Premikajoče se platforme.
 5. Kovanci na progi, za kovance pa odkleneš klobuke.
-6. Kontrole za telefon (gumbi na zaslonu).
+6. Urejevalnik na telefonu.
 
 ## Objava na internetu (brezplačno, GitHub Pages)
 
