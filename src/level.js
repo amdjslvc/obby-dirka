@@ -147,10 +147,10 @@ export function sampleLevel() {
   // Začetni otok
   plat(-2, 0, -2, 5, 5, 2)
   L.set(0, 0, 0, 9) // start
-  // Skoki po stebrih
+  // Skoki po stebrih (2×2, da je lažje tudi na telefonu)
   let z = 4
   for (let i = 0; i < 4; i++) {
-    L.set(i % 2 ? 1 : -1, i, z, 3)
+    plat(i % 2 ? 0 : -1, i, z, 2, 2, 3)
     z += 3
   }
   // Mostiček čez lavo

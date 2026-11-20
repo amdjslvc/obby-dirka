@@ -4,7 +4,7 @@
 import * as THREE from 'three'
 import { Level, BLOCKS, HOTBAR, sampleLevel } from './level.js'
 import { createScene, LevelView, Avatar, SKINS, HATS } from './world.js'
-import { Player } from './player.js'
+import { Player, PHYSICS } from './player.js'
 import { Input } from './input.js'
 import { Editor } from './editor.js'
 import { Net, newRoomCode } from './net.js'
@@ -39,6 +39,20 @@ let me = null // moj avatar
 let profile = store.get('profile', { name: '', color: SKINS[Math.floor(Math.random() * SKINS.length)], hat: 'brez' })
 
 const cam = { yaw: Math.PI, pitch: -0.35, dist: 7 }
+let lastLook = -10 // kdaj je igralec nazadnje sam obrnil kamero
+
+// Na telefonu je igra bolj prizanesljiva: več časa za skok, več nadzora v zraku
+if (input.touch) Object.assign(PHYSICS, { coyoteTime: 0.18, jumpBuffer: 0.2, airAccel: 11 })
+
+// Senca, ki pokaže, kam boš pristal
+const landing = new THREE.Mesh(
+  new THREE.CircleGeometry(0.4, 24),
+  new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.45, depthWrite: false })
+)
+landing.rotation.x = -Math.PI / 2
+landing.visible = false
+scene.add(landing)
+const DOWN = new THREE.Vector3(0, -1, 0)
 let runTime = 0
 let running = false // ali teče štoparica
 let finished = false
@@ -85,6 +99,8 @@ function startPlay(raceMode = false) {
   ensureMe()
   player.reset()
   cam.yaw = Math.PI
+  cam.pitch = input.touch ? -0.55 : -0.35 // na telefonu bolj od zgoraj – lažje vidiš, kam skačeš
+  cam.dist = input.touch ? 8 : 7
   runTime = 0
   finished = false
   running = !raceMode
@@ -202,6 +218,7 @@ function updatePlayer(dt) {
   // --- kamera z miško ---
   const [lx, ly] = input.takeLook()
   cam.yaw -= lx
+  if (lx || ly) lastLook = time
   cam.pitch = Math.max(-1.2, Math.min(0.9, cam.pitch - ly))
 
   // --- odštevanje pred dirko ---
@@ -227,6 +244,19 @@ function updatePlayer(dt) {
   if (running && !finished) runTime += dt
   $('timer').textContent = formatTime(runTime)
   me.update(dt, player.pos, player.yaw, player.horizontalSpeed, player.onGround)
+
+  // --- senca pristanka (samo v zraku) ---
+  const below = player.onGround ? null : level.raycast(player.pos, DOWN, 40)
+  landing.visible = !!below
+  if (below) landing.position.set(player.pos.x, below.y + 0.51, player.pos.z)
+
+  // --- telefon: kamera se sama obrne za likom, ko teče naprej ---
+  const fwd = Math.max(0, input.move.forward)
+  if (input.touch && !frozen && fwd > 0 && time - lastLook > 0.8) {
+    const target = player.yaw + Math.PI
+    const d = Math.atan2(Math.sin(target - cam.yaw), Math.cos(target - cam.yaw))
+    cam.yaw += d * Math.min(1, dt * 2.5 * fwd * Math.min(1, player.horizontalSpeed / 4))
+  }
 
   // --- kamera za igralcem (ne gre skozi kocke) ---
   const head = player.pos.clone().add(new THREE.Vector3(0, 1.6, 0))

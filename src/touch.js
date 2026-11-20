@@ -7,6 +7,7 @@
 const RADIUS = 55 // kako daleč se lahko premakne gumb joysticka (v pikslih)
 const DEADZONE = 0.15 // majhni premiki se ne štejejo
 const LOOK_SPEED = 1.8 // občutljivost obračanja kamere
+const FULL = 0.6 // polna hitrost že pri 60 % odmika joysticka
 
 // actions: { jump, menu, restart, emote(i) }, emotes: seznam besedil
 export function setupTouch(input, actions, emotes) {
@@ -49,7 +50,8 @@ export function setupTouch(input, actions, emotes) {
     if (strength < DEADZONE) {
       input.touchMove = { forward: 0, right: 0 }
     } else {
-      input.touchMove = { forward: -dy / RADIUS, right: dx / RADIUS }
+      const k = Math.min(1, strength / FULL) / strength / RADIUS
+      input.touchMove = { forward: -dy * k, right: dx * k }
     }
   })
   const endStick = (e) => {
