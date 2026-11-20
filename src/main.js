@@ -10,6 +10,7 @@ import { Editor } from './editor.js'
 import { Net, newRoomCode } from './net.js'
 import { sfx } from './sound.js'
 import { setupTouch } from './touch.js'
+import { worldTime } from './movers.js'
 
 const $ = (id) => document.getElementById(id)
 const EMOTES = ['👋 Živjo!', '😂 Haha', '🏆 GG!', '⏳ Počakaj!']
@@ -202,6 +203,10 @@ function frame() {
   lastTime = now
   time += dt
   levelView.animate(time)
+
+  // premične platforme: v igri se premikajo, v urejevalniku mirujejo
+  levelView.updateMovers(mode === 'play' || mode === 'race' ? worldTime() : null)
+  player.movers = levelView.movers
 
   if (mode === 'edit') {
     editor.update(dt)
@@ -516,7 +521,8 @@ function initMenu() {
     const s = document.createElement('div')
     s.className = 'slot'
     s.style.background = '#' + BLOCKS[t].color.toString(16).padStart(6, '0')
-    s.innerHTML = `<b>${['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '='][i]}</b>`
+    s.innerHTML = `<b>${['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '[', ']', '\\'][i]}</b>` +
+      (BLOCKS[t].move ? `<span>${{ x: '↔', z: '↕', y: '⇅' }[BLOCKS[t].move]}</span>` : '')
     s.title = BLOCKS[t].name
     $('hotbar').append(s)
   })

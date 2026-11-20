@@ -42,7 +42,7 @@ Urejevalnik zaenkrat deluje samo na računalniku.
 | Ctrl | hitreje |
 | desni klik | postavi kocko |
 | levi klik | pobriši kocko |
-| kolešček, 1–9, 0, -, = | izberi kocko |
+| kolešček, 1–9, 0, -, =, [, ], \\ | izberi kocko |
 | Ctrl+Z | razveljavi |
 | E | preizkusi progo |
 
@@ -58,6 +58,13 @@ Urejevalnik zaenkrat deluje samo na računalniku.
 | 🟨 Pospešek | 2 sekundi hitrejši tek |
 | 🧊 Led | drsi |
 | 🪟 Steklo | prosojno, a trdno |
+| 🟪 Premična ↔ | premika se levo-desno (3 kocke) |
+| 🟦 Premična ↕ | premika se naprej-nazaj (3 kocke) |
+| 🟧 Dvigalo ⇅ | premika se gor-dol (3 kocke) |
+
+Premične kocke se vedno premikajo v pozitivni smeri od mesta, kamor jih postaviš.
+Sosednje kocke iste vrste se premikajo skupaj, zato lahko zgradiš večjo platformo.
+V urejevalniku mirujejo, v igri pa se premikajo.
 
 ## Kako je narejena (kje kaj najdeš)
 
@@ -70,6 +77,7 @@ Urejevalnik zaenkrat deluje samo na računalniku.
 | `src/net.js` | igranje s prijatelji (WebRTC prek knjižnice Trystero) |
 | `src/main.js` | meni, glavna zanka, dirke |
 | `src/touch.js` | kontrole za telefon (joystick, skok) |
+| `src/movers.js` | premikajoče se platforme |
 | `src/sound.js` | zvoki, narejeni s kodo |
 
 JavaScript je podoben Pythonu: `function` je `def`, `{ }` zamenja zamik,
@@ -80,7 +88,7 @@ JavaScript je podoben Pythonu: `function` je `def`, `{ }` zamenja zamik,
 1. V `PHYSICS` spremeni moč skoka ali gravitacijo in poskusi, kako se igra spremeni.
 2. Dodaj nov emote v `EMOTES` (main.js) in nov klobuk v `HATS` (world.js).
 3. Dodaj novo kocko, npr. **lepljivo** (počasna hoja) ali **teleport**.
-4. Premikajoče se platforme.
+4. Premične platforme z nastavljivo dolžino poti in hitrostjo (zdaj sta v `movers.js` za vse enaki).
 5. Kovanci na progi, za kovance pa odkleneš klobuke.
 6. Urejevalnik na telefonu.
 

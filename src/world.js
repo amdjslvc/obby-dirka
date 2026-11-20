@@ -4,6 +4,7 @@
 // ============================================================
 import * as THREE from 'three'
 import { BLOCKS } from './level.js'
+import { makeMovers, updateMovers } from './movers.js'
 
 export function createScene(canvas) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
@@ -116,7 +117,7 @@ export class LevelView {
     }
     this.meshes = []
     const byType = {}
-    for (const [x, y, z, t] of level.blocks()) (byType[t] ||= []).push([x, y, z])
+    for (const [x, y, z, t] of level.blocks()) if (!BLOCKS[t].move) (byType[t] ||= []).push([x, y, z])
     const mat = new THREE.Matrix4()
     for (const [t, list] of Object.entries(byType)) {
       const mesh = new THREE.InstancedMesh(this.geo, this.materials[t], list.length)
@@ -125,6 +126,31 @@ export class LevelView {
       mesh.receiveShadow = true
       this.scene.add(mesh)
       this.meshes.push(mesh)
+    }
+
+    // Premične platforme: ena InstancedMesh na tip, položaje posodobimo vsak okvir
+    this.movers = makeMovers(level)
+    this.moverMeshes = []
+    const groups = {}
+    for (const m of this.movers) (groups[m.type] ||= []).push(m)
+    for (const [t, list] of Object.entries(groups)) {
+      const mesh = new THREE.InstancedMesh(this.geo, this.materials[t], list.length)
+      mesh.castShadow = mesh.receiveShadow = true
+      mesh.frustumCulled = false // premikajo se, zato jih vedno rišemo
+      this.scene.add(mesh)
+      this.meshes.push(mesh)
+      this.moverMeshes.push({ mesh, list })
+    }
+    this.updateMovers(null)
+  }
+
+  // t = čas (null = vse na začetnem mestu, npr. v urejevalniku)
+  updateMovers(t) {
+    updateMovers(this.movers, t)
+    const mat = new THREE.Matrix4()
+    for (const { mesh, list } of this.moverMeshes) {
+      list.forEach((m, i) => mesh.setMatrixAt(i, mat.makeTranslation(m.x, m.y, m.z)))
+      mesh.instanceMatrix.needsUpdate = true
     }
   }
 

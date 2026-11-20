@@ -19,10 +19,14 @@ export const BLOCKS = {
   10: { name: 'Kontrolna točka', color: 0x2ee6a6, checkpoint: true, glow: 0.4 },
   11: { name: 'Cilj', color: 0xffffff, finish: true, checker: true },
   12: { name: 'Steklo', color: 0xcfefff, glass: true },
+  // Premične kocke (glej movers.js): move = os, po kateri se premikajo
+  13: { name: 'Premična ↔ levo-desno', color: 0x8e6cff, move: 'x', glow: 0.15 },
+  14: { name: 'Premična ↕ naprej-nazaj', color: 0x4f7dff, move: 'z', glow: 0.15 },
+  15: { name: 'Dvigalo ⇅ gor-dol', color: 0xff8e3c, move: 'y', glow: 0.15 },
 }
 
 // Vrstni red v orodni vrstici urejevalnika (tipke 1..9, 0, -, =)
-export const HOTBAR = [1, 2, 3, 4, 12, 5, 6, 7, 8, 10, 9, 11]
+export const HOTBAR = [1, 2, 3, 4, 12, 5, 6, 7, 8, 10, 9, 11, 13, 14, 15]
 
 const key = (x, y, z) => `${x},${y},${z}`
 
@@ -178,6 +182,9 @@ export function sampleLevel() {
   // Stopnice iz stekla
   for (let i = 0; i < 4; i++) L.set(0, 8 + i, z + i * 2, 12)
   z += 8
+  // Premična platforma te zapelje do cilja
+  plat(-1, 11, z, 2, 2, 14)
+  z += 6
   // Cilj
   plat(-2, 11, z, 5, 5, 11)
   return L

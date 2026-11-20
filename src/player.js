@@ -35,6 +35,8 @@ export class Player {
     this.jumpTimer = 0
     this.boost = 0
     this.spawn = new THREE.Vector3()
+    this.movers = [] // premične platforme (glej movers.js)
+    this.groundMover = null // platforma, na kateri stojimo
     this.events = [] // dogodki za glavno zanko: 'death', 'checkpoint', 'finish', 'bounce', 'boost'
     this.lastCheckpoint = null
   }
@@ -51,6 +53,28 @@ export class Player {
     this.pos.copy(this.spawn)
     this.vel.set(0, 0, 0)
     this.boost = 0
+    this.groundMover = null
+  }
+
+  // Premične platforme: peljemo se z njimi, in te nas potisnejo, če se zaletijo v nas
+  rideMovers() {
+    const m = this.groundMover
+    if (m && (m.dx || m.dy || m.dz)) {
+      const v = this.vel.clone()
+      this.moveAxis('y', m.dy)
+      this.moveAxis('x', m.dx)
+      this.moveAxis('z', m.dz)
+      this.vel.copy(v) // vožnja ne spremeni naše lastne hitrosti
+    }
+    for (const b of this.overlapping(0)) {
+      const o = b[4]
+      if (!o) continue
+      // potisni nas iz platforme v smeri, v katero se premika
+      if (o.dy > 0) { this.pos.y = o.y + 0.5 + EPS; this.vel.y = Math.max(this.vel.y, 0); this.groundMover = o }
+      else if (o.dy < 0) this.pos.y = o.y - 0.5 - HEIGHT - EPS
+      else if (o.dx) this.pos.x = o.x + Math.sign(o.dx) * (0.5 + HALF_W + EPS)
+      else if (o.dz) this.pos.z = o.z + Math.sign(o.dz) * (0.5 + HALF_W + EPS)
+    }
   }
 
   pressJump() {
@@ -60,6 +84,7 @@ export class Player {
   // input: { forward: -1..1, right: -1..1 }, camYaw: smer kamere
   update(dt, input, camYaw) {
     const P = PHYSICS
+    this.rideMovers()
     // --- želena smer gibanja glede na kamero ---
     const fx = -Math.sin(camYaw), fz = -Math.cos(camYaw)
     const rx = Math.cos(camYaw), rz = -Math.sin(camYaw)
@@ -98,6 +123,7 @@ export class Player {
     this.vel.y = Math.max(this.vel.y - P.gravity * dt, -40)
     const steps = Math.ceil((Math.abs(this.vel.x) + Math.abs(this.vel.y) + Math.abs(this.vel.z)) * dt / 0.3) || 1
     this.onGround = false
+    this.groundMover = null
     for (let i = 0; i < steps; i++) {
       this.moveAxis('x', (this.vel.x * dt) / steps)
       this.moveAxis('z', (this.vel.z * dt) / steps)
@@ -145,7 +171,10 @@ export class Player {
     } else {
       const max = Math.max(...hits.map((h) => h[coord]))
       this.pos[axis] = max + 0.5 + (axis === 'y' ? 0 : HALF_W) + EPS
-      if (axis === 'y') this.onGround = true
+      if (axis === 'y') {
+        this.onGround = true
+        this.groundMover = hits.find((h) => h[4] && h[1] === max)?.[4] || null
+      }
     }
     this.vel[axis] = 0
   }
@@ -162,8 +191,14 @@ export class Player {
       for (let y = cell(y0); y <= cell(y1 - EPS); y++)
         for (let z = cell(z0); z <= cell(z1 - EPS); z++) {
           const t = this.level.get(x, y, z)
-          if (t) out.push([x, y, z, t])
+          if (t && !BLOCKS[t].move) out.push([x, y, z, t]) // premične kocke niso na svojem mestu
         }
+    // premične platforme (na trenutnem položaju)
+    for (const m of this.movers) {
+      if (m.x + 0.5 > x0 && m.x - 0.5 < x1 && m.y + 0.5 > y0 && m.y - 0.5 < y1 && m.z + 0.5 > z0 && m.z - 0.5 < z1) {
+        out.push([m.x, m.y, m.z, m.type, m])
+      }
+    }
     return out
   }
 
