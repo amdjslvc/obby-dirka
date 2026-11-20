@@ -1,0 +1,21 @@
+{
+  "name": "obby",
+  "version": "1.0.0",
+  "description": "Obby dirka z urejevalnikom prog – igra v brskalniku",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "three": "^0.187.0",
+    "trystero": "^0.27.0"
+  },
+  "devDependencies": {
+    "vite": "^8.3.8"
+  }
+}

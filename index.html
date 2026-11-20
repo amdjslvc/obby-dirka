@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="sl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Obby Dirka</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏁</text></svg>" />
+  <link rel="stylesheet" href="./src/style.css" />
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <!-- ===== HUD med igro ===== -->
+  <div id="hud" hidden>
+    <div id="timer">0:00.00</div>
+    <div id="levelName"></div>
+    <div id="toast"></div>
+    <div id="countdown"></div>
+    <div id="crosshair">+</div>
+    <div id="results" hidden></div>
+    <div id="help"></div>
+    <div id="hotbar" hidden></div>
+  </div>
+
+  <!-- ===== Meni ===== -->
+  <div id="menu">
+    <div class="panel">
+      <h1>OBBY <span>DIRKA</span></h1>
+
+      <button id="resumeBtn" class="big primary" hidden>▶ Nadaljuj</button>
+      <p id="menuMsg" class="muted"></p>
+
+      <section>
+        <h2>Tvoj lik</h2>
+        <div class="row">
+          <input id="nameInput" maxlength="16" placeholder="Tvoje ime" />
+          <select id="hatSelect"></select>
+        </div>
+        <div id="skins" class="row"></div>
+      </section>
+
+      <section>
+        <h2>Proga: <input id="levelNameInput" maxlength="40" class="inline" /></h2>
+        <div class="row">
+          <button id="playBtn" class="big primary">▶ Igraj</button>
+          <button id="editBtn" class="big">🛠 Urejevalnik</button>
+        </div>
+        <div class="row small">
+          <button id="shareBtn">📤 Deli progo</button>
+          <button id="loadBtn">📥 Naloži kodo</button>
+          <button id="saveBtn">💾 Shrani</button>
+          <button id="newBtn">✨ Nova</button>
+          <button id="sampleBtn">🗺 Vzorčna</button>
+        </div>
+        <div id="shareBox" hidden>
+          <textarea id="codeArea" rows="3" spellcheck="false"></textarea>
+          <div class="row small">
+            <button id="codeOkBtn" class="primary">Naloži</button>
+            <span id="codeMsg" class="muted"></span>
+          </div>
+        </div>
+        <div id="savedList" class="row small"></div>
+      </section>
+
+      <section>
+        <h2>Igraj s prijatelji</h2>
+        <div id="roomOut" class="row">
+          <button id="createRoomBtn">➕ Ustvari sobo</button>
+          <input id="roomInput" maxlength="4" placeholder="KODA" class="code" />
+          <button id="joinRoomBtn">Pridruži se</button>
+        </div>
+        <div id="roomIn" hidden>
+          <p>Soba <b id="roomCode" class="code"></b> – povej kodo prijateljem!</p>
+          <ul id="playerList"></ul>
+          <div class="row">
+            <button id="raceBtn" class="primary">🏁 Začni dirko z mojo progo</button>
+            <button id="leaveRoomBtn">Zapusti sobo</button>
+          </div>
+        </div>
+      </section>
+
+      <details>
+        <summary>Kontrole</summary>
+        <p><b>Igra:</b> WASD premikanje · Space skok · miška pogled · R znova · 1–4 emoti · Esc meni</p>
+        <p><b>Urejevalnik:</b> WASD letenje · Space gor · Shift dol · Ctrl hitreje · desni klik postavi ·
+          levi klik pobriši · kolešček/številke izberi kocko · Ctrl+Z razveljavi · E preizkusi progo</p>
+      </details>
+    </div>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
