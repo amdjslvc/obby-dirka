@@ -11,6 +11,8 @@ import { Net, newRoomCode } from './net.js'
 import { sfx } from './sound.js'
 import { setupTouch } from './touch.js'
 import { worldTime } from './movers.js'
+import { Particles, FX } from './fx.js'
+import { startMusic, setMusic, musicOn } from './music.js'
 
 const $ = (id) => document.getElementById(id)
 const EMOTES = ['👋 Živjo!', '😂 Haha', '🏆 GG!', '⏳ Počakaj!']
@@ -27,7 +29,9 @@ const store = {
 
 // ---------- stanje igre ----------
 const canvas = $('game')
-const { renderer, scene, camera, followSun } = createScene(canvas)
+const { scene, camera, followSun, render, animateSky } = createScene(canvas)
+const particles = new Particles(scene)
+let shake = 0 // stresanje kamere
 const input = new Input(canvas)
 const levelView = new LevelView(scene)
 const editor = new Editor(scene, camera, input, levelView)
@@ -182,6 +186,7 @@ function startEdit() {
 
 function enterGame() {
   lastMode = mode
+  startMusic()
   $('menu').hidden = true
   $('hud').hidden = false
   $('hud').classList.toggle('edit', mode === 'edit')
@@ -271,10 +276,27 @@ function frame() {
     followSun(editor.pos)
   } else if (mode === 'play' || mode === 'race') {
     updatePlayer(dt)
+  } else {
+    menuOrbit(dt)
   }
   updateRemotes(dt)
-  renderer.render(scene, camera)
+  particles.update(dt)
+  animateSky(dt, camera.position)
+  render()
   requestAnimationFrame(frame)
+}
+
+// V meniju kamera počasi kroži okoli proge
+let orbit = 0
+function menuOrbit(dt) {
+  orbit += dt * 0.08
+  const s = level.find(9) || [0, 0, 0]
+  const f = level.find(11) || s
+  const cx = (s[0] + f[0]) / 2, cy = (s[1] + f[1]) / 2, cz = (s[2] + f[2]) / 2
+  const r = 18 + Math.hypot(f[0] - s[0], f[2] - s[2]) * 0.6
+  camera.position.set(cx + Math.cos(orbit) * r, cy + 12 + r * 0.2, cz + Math.sin(orbit) * r)
+  camera.lookAt(cx, cy, cz)
+  followSun(new THREE.Vector3(cx, cy, cz))
 }
 
 function updatePlayer(dt) {
@@ -310,6 +332,11 @@ function updatePlayer(dt) {
     runCoins.add(key)
     levelView.setCoinState(key, 'hidden')
     sfx('coin')
+    const [cx, cy, cz] = key.split(',').map(Number)
+    particles.burst(new THREE.Vector3(cx, cy, cz), FX.coin)
+    $('coinHud').classList.remove('bump')
+    void $('coinHud').offsetWidth // ponovno sproži animacijo
+    $('coinHud').classList.add('bump')
     updateCoinHud()
   }
 
@@ -342,6 +369,19 @@ function updatePlayer(dt) {
   const dist = hit ? Math.max(0.6, hit.dist - 0.3) : cam.dist
   camera.position.copy(head).addScaledVector(back, dist)
   camera.lookAt(head)
+  // stresanje ob smrti
+  if (shake > 0) {
+    shake = Math.max(0, shake - dt)
+    camera.position.x += (Math.random() - 0.5) * shake * 1.2
+    camera.position.y += (Math.random() - 0.5) * shake * 1.2
+  }
+  // pri pospešku se zorni kot razširi – občutek hitrosti
+  const fov = player.boost > 0 ? 82 : 70
+  if (Math.abs(camera.fov - fov) > 0.1) {
+    camera.fov += (fov - camera.fov) * Math.min(1, dt * 6)
+    camera.updateProjectionMatrix()
+  }
+  if (player.boost > 0 && player.horizontalSpeed > 1) particles.burst(player.pos, FX.boost)
   followSun(player.pos)
 
   // --- pošlji svoj položaj prijateljem ---
@@ -355,13 +395,29 @@ function updatePlayer(dt) {
 }
 
 function handleEvent(ev) {
-  if (ev === 'death') { sfx('death'); flash('#ff3b30') }
-  if (ev === 'bounce') sfx('bounce')
+  const feet = player.pos
+  if (ev === 'death') {
+    sfx('death')
+    flash('#ff3b30')
+    shake = 0.35
+    if (player.deathPos) particles.burst(player.deathPos.clone().setY(player.deathPos.y + 0.9), FX.death)
+  }
+  if (ev === 'jump') particles.burst(feet, FX.dust)
+  if (ev === 'land') particles.burst(feet, FX.land)
+  if (ev === 'bounce') { sfx('bounce'); particles.burst(feet, FX.bounce) }
   if (ev === 'boost') { sfx('boost'); toast('⚡ Pospešek!') }
-  if (ev === 'checkpoint') { sfx('checkpoint'); toast('✅ Kontrolna točka') }
+  if (ev === 'checkpoint') { sfx('checkpoint'); toast('✅ Kontrolna točka'); particles.burst(feet, FX.checkpoint) }
   if (ev === 'finish' && !finished && running) {
     finished = true
     sfx('finish')
+    // ognjemet!
+    for (let i = 0; i < 6; i++) {
+      setTimeout(() => {
+        const p = player.pos.clone().add(new THREE.Vector3((Math.random() - 0.5) * 8, 5 + Math.random() * 4, (Math.random() - 0.5) * 8))
+        particles.burst(p, FX.firework)
+        sfx('pop')
+      }, i * 280)
+    }
     const t = runTime
     // uvrstitev na dirki (nagrada samo, če so v sobi še drugi)
     const place = mode === 'race' && remotes.size > 0 ? results.size + 1 : 0
@@ -488,6 +544,18 @@ function initMenu() {
     saveProfile()
   })
   renderHats()
+  // --- glasba ---
+  const music = store.get('music', true)
+  setMusic(music)
+  const musicIcon = () => ($('musicBtn').textContent = musicOn ? '🔊' : '🔇')
+  musicIcon()
+  const toggleMusic = () => {
+    setMusic(!musicOn)
+    store.set('music', musicOn)
+    musicIcon()
+  }
+  $('musicBtn').onclick = toggleMusic
+  input.onKey((e) => e.code === 'KeyM' && toggleMusic())
   for (const c of SKINS) {
     const b = document.createElement('button')
     b.className = 'skin' + (c === profile.color ? ' sel' : '')
@@ -699,6 +767,8 @@ let toastTimer = 0
 function toast(text, ms = 1500) {
   const el = $('toast')
   el.textContent = text
+  el.classList.remove('show')
+  void el.offsetWidth
   el.classList.add('show')
   clearTimeout(toastTimer)
   toastTimer = setTimeout(() => el.classList.remove('show'), ms)

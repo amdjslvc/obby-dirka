@@ -150,3 +150,22 @@ body.touch #editBtn, body.touch #newBtn { display: none; }
   position: absolute; top: 70px; left: 50%; transform: translateX(-50%);
   font-weight: 800; font-size: 1.2rem; color: #ffd23f; text-shadow: 0 2px 0 #000a;
 }
+
+/* ---------- Animacije ---------- */
+.panel { position: relative; animation: panelIn 0.35s cubic-bezier(.2,1.4,.4,1); }
+@keyframes panelIn { from { transform: scale(0.9) translateY(20px); opacity: 0; } }
+h1 { animation: titleBob 2.4s ease-in-out infinite; }
+h1 span { display: inline-block; background: linear-gradient(90deg, #ffd23f, #ff9f43, #ffd23f);
+  background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: shine 3s linear infinite; }
+@keyframes titleBob { 50% { transform: translateY(-4px) rotate(-1deg); } }
+@keyframes shine { to { background-position: -200% 0; } }
+.corner { position: absolute; top: 12px; right: 12px; border-radius: 50%; width: 40px; height: 40px; padding: 0; }
+#toast.show { animation: pop 0.35s cubic-bezier(.2,1.6,.4,1); }
+@keyframes pop { from { transform: translateX(-50%) scale(0.4); } to { transform: translateX(-50%) scale(1); } }
+#coinHud.bump { animation: bump 0.3s ease-out; }
+@keyframes bump { 40% { transform: translateX(-50%) scale(1.4); } }
+#countdown:not(:empty) { animation: count 1s ease-out infinite; }
+@keyframes count { from { transform: translate(-50%, -50%) scale(1.6); opacity: 0.4; } 30% { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+button.primary { box-shadow: 0 4px 0 #1e7a39; }
+button.primary:active { box-shadow: 0 1px 0 #1e7a39; transform: translateY(3px); }

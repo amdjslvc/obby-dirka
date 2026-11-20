@@ -6,6 +6,7 @@ let ctx = null
 // Vsak zvok je seznam not: [frekvenca (Hz), trajanje (s), oblika vala]
 const SOUNDS = {
   tick: [[440, 0.12, 'square']],
+  pop: [[200, 0.05, 'sawtooth'], [90, 0.15, 'triangle']],
   coin: [[988, 0.06, 'square'], [1319, 0.18, 'square']],
   buy: [[523, 0.08, 'triangle'], [784, 0.08, 'triangle'], [1047, 0.2, 'triangle']],
   go: [[880, 0.3, 'square']],

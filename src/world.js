@@ -5,7 +5,6 @@
 import * as THREE from 'three'
 import { BLOCKS } from './level.js'
 import { makeMovers, updateMovers } from './movers.js'
-
 export function createScene(canvas) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
@@ -25,6 +24,12 @@ export function createScene(canvas) {
   sun.shadow.bias = -0.0005
   scene.add(sun, sun.target)
 
+  // Oblaki in morje oblakov spodaj
+  const clouds = makeClouds()
+  scene.add(clouds)
+  const sea = cloudSea()
+  scene.add(sea)
+
   // Senca sledi igralcu, da je vedno ostra okoli njega
   const followSun = (p) => {
     sun.position.set(p.x + 20, p.y + 40, p.z + 10)
@@ -39,7 +44,70 @@ export function createScene(canvas) {
   window.addEventListener('resize', resize)
   resize()
 
-  return { renderer, scene, camera, followSun }
+  const render = () => renderer.render(scene, camera)
+
+  // Oblaki počasi plujejo, morje oblakov pa sledi kameri (da nikoli ne vidiš roba)
+  const animateSky = (dt, center) => {
+    for (const c of clouds.children) {
+      c.position.x += c.userData.speed * dt
+      if (c.position.x > 120) c.position.x = -120
+    }
+    clouds.position.set(center.x, 0, center.z)
+    sea.position.set(center.x, -18, center.z)
+    sea.material.map.offset.x += dt * 0.004
+  }
+
+  return { renderer, scene, camera, followSun, render, animateSky }
+}
+
+// Kockasti oblaki iz belih škatel
+function makeClouds() {
+  const group = new THREE.Group()
+  const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xdfeeff, emissiveIntensity: 0.45, transparent: true, opacity: 0.85, roughness: 1 })
+  const geo = new THREE.BoxGeometry(1, 1, 1)
+  for (let i = 0; i < 28; i++) {
+    const cloud = new THREE.Group()
+    const parts = 3 + Math.floor(Math.random() * 4)
+    for (let j = 0; j < parts; j++) {
+      const b = new THREE.Mesh(geo, mat)
+      b.scale.set(4 + Math.random() * 6, 1.5 + Math.random() * 2, 3 + Math.random() * 4)
+      b.position.set(j * 3 - parts * 1.5, Math.random() * 1.5, (Math.random() - 0.5) * 3)
+      cloud.add(b)
+    }
+    const a = Math.random() * Math.PI * 2
+    const r = 45 + Math.random() * 70
+    cloud.position.set(Math.cos(a) * r, -6 + Math.random() * 40, Math.sin(a) * r)
+    cloud.userData.speed = 0.5 + Math.random()
+    group.add(cloud)
+  }
+  return group
+}
+
+// Ravnina z mehkim vzorcem oblakov daleč spodaj
+function cloudSea() {
+  const c = document.createElement('canvas')
+  c.width = c.height = 256
+  const g = c.getContext('2d')
+  g.fillStyle = '#eaf4ff'
+  g.fillRect(0, 0, 256, 256)
+  for (let i = 0; i < 160; i++) {
+    const x = Math.random() * 256, y = Math.random() * 256, r = 10 + Math.random() * 30
+    const grad = g.createRadialGradient(x, y, 0, x, y, r)
+    grad.addColorStop(0, 'rgba(255,255,255,0.9)')
+    grad.addColorStop(1, 'rgba(255,255,255,0)')
+    g.fillStyle = grad
+    g.fillRect(x - r, y - r, r * 2, r * 2)
+  }
+  const tex = new THREE.CanvasTexture(c)
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping
+  tex.repeat.set(12, 12)
+  tex.colorSpace = THREE.SRGBColorSpace
+  const sea = new THREE.Mesh(
+    new THREE.PlaneGeometry(600, 600),
+    new THREE.MeshBasicMaterial({ map: tex, fog: true })
+  )
+  sea.rotation.x = -Math.PI / 2
+  return sea
 }
 
 function skyTexture() {
@@ -95,7 +163,7 @@ export class LevelView {
     this.meshes = []
     this.geo = new THREE.BoxGeometry(1, 1, 1)
     this.coinGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.08, 20).rotateX(Math.PI / 2)
-    this.coinMat = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.6, roughness: 0.3, emissive: 0x664400, emissiveIntensity: 0.5 })
+    this.coinMat = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.15, roughness: 0.35, emissive: 0xffaa00, emissiveIntensity: 0.35 })
     this.coinState = new Map()
     this.coins = []
     this.materials = {}
@@ -222,12 +290,18 @@ export class Avatar {
   constructor(scene, { name = '', color = SKINS[4], hat = 'brez' } = {}) {
     this.scene = scene
     this.group = new THREE.Group()
+    // rig = telo lika (se razteguje in stiska), ime nad glavo pa ostane v group
+    this.rig = new THREE.Group()
+    this.group.add(this.rig)
+    this.squash = 0 // >0 stisnjen, <0 raztegnjen
+    this.squashVel = 0
+    this.wasGround = true
     const mat = (c) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.7 })
     const box = (w, h, d, m, x, y, z) => {
       const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m)
       mesh.position.set(x, y, z)
       mesh.castShadow = true
-      this.group.add(mesh)
+      this.rig.add(mesh)
       return mesh
     }
     this.bodyMat = mat(color)
@@ -264,7 +338,7 @@ export class Avatar {
       const mesh = new THREE.Mesh(geo, mat)
       mesh.position.set(x, y, z)
       mesh.castShadow = true
-      this.group.add(mesh)
+      this.rig.add(mesh)
       return mesh
     }
     const black = new THREE.MeshStandardMaterial({ color: '#1d1d24' })
@@ -292,7 +366,7 @@ export class Avatar {
         this.propeller.add(b)
       }
       add(new THREE.CylinderGeometry(0.02, 0.02, 0.07), 0, 2.07, 0, black)
-      this.group.add(this.propeller)
+      this.rig.add(this.propeller)
     } else if (hat === 'sij') {
       const halo = add(new THREE.TorusGeometry(0.24, 0.035, 8, 24), 0, 2.08, 0, goldGlow)
       halo.rotation.x = Math.PI / 2
@@ -329,6 +403,21 @@ export class Avatar {
     this.legR.rotation.x = -swing
     this.armL.rotation.x = -swing
     this.armR.rotation.x = swing
+    // v zraku: roke gor ("juhuu!")
+    const armsUp = onGround ? 0 : 2.6
+    this.armL.rotation.z += (-armsUp - this.armL.rotation.z) * Math.min(1, dt * 12)
+    this.armR.rotation.z += (armsUp - this.armR.rotation.z) * Math.min(1, dt * 12)
+
+    // raztegni ob odskoku, stisni ob pristanku (vzmet)
+    if (onGround && !this.wasGround) this.squashVel += 6
+    if (!onGround && this.wasGround) this.squashVel -= 5
+    this.wasGround = onGround
+    this.squashVel += (-this.squash * 180 - this.squashVel * 12) * dt
+    this.squash += this.squashVel * dt
+    const s = Math.max(-0.35, Math.min(0.35, this.squash))
+    this.rig.scale.set(1 + s * 0.6, 1 - s, 1 + s * 0.6)
+    // dihanje, ko stojiš pri miru
+    if (onGround && speed < 0.5) this.rig.scale.y *= 1 + Math.sin(performance.now() / 400) * 0.015
     if (this.bubble && (this.bubbleTimer -= dt) <= 0) {
       this.group.remove(this.bubble)
       this.bubble = null

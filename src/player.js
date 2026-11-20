@@ -116,11 +116,14 @@ export class Player {
       this.vel.y = P.jump
       this.jumpTimer = 0
       this.coyote = 0
+      this.events.push('jump')
     }
     this.boost -= dt
 
     // --- gravitacija in premik (razdeljen na manjše korake, da ne gremo skozi kocke) ---
     this.vel.y = Math.max(this.vel.y - P.gravity * dt, -40)
+    const wasGround = this.onGround
+    const fallSpeed = -this.vel.y
     const steps = Math.ceil((Math.abs(this.vel.x) + Math.abs(this.vel.y) + Math.abs(this.vel.z)) * dt / 0.3) || 1
     this.onGround = false
     this.groundMover = null
@@ -130,10 +133,13 @@ export class Player {
       this.moveAxis('y', (this.vel.y * dt) / steps)
     }
 
+    if (!wasGround && this.onGround && fallSpeed > 9) this.events.push('land')
+
     // --- posebne kocke ---
     const touch = this.touching(false)
     const under = this.onGround ? this.touching(true) : new Set()
     if (touch.has('kill') || this.pos.y < P.fallLimit) {
+      this.deathPos = this.pos.clone()
       this.events.push('death')
       this.respawn()
       return
