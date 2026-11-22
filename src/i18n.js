@@ -13,6 +13,8 @@ const RTL = ['ar'] // jeziki, ki se berejo od desne proti levi
 
 const D = {
   sl: {
+    selfOld: 'Tvoja različica igre je stara – osveži stran 🔄',
+    easy: "🐣 Lahki način – po padcu se vrneš tja, kjer si stal", ghost: "👻 Tvoj rekord", oldVersion: "{name} ima staro različico igre – naj osveži stran 🔄", lowGfx: "Grafika poenostavljena, da igra teče gladko 🐢→🐇",
     title2: 'DIRKA', resume: '▶ Nadaljuj', yourChar: 'Tvoj lik', namePh: 'Tvoje ime', track: 'Proga:',
     play: '▶ Igraj', editor: '🛠 Urejevalnik', share: '📤 Deli progo', loadCode: '📥 Naloži kodo', save: '💾 Shrani',
     new: '✨ Nova', sample: '🗺 Vzorčna', load: 'Naloži', playFriends: 'Igraj s prijatelji', createRoom: '➕ Ustvari sobo',
@@ -43,6 +45,8 @@ const D = {
     h: ['Brez', 'Kapa', 'Mačja ušesa', 'Rogovi', 'Cilinder', 'Čarovnik', 'Propeler', 'Svetniški sij', 'Krona'],
   },
   en: {
+    selfOld: 'Your version of the game is old – refresh the page 🔄',
+    easy: "🐣 Easy mode – after a fall you return to where you stood", ghost: "👻 Your record", oldVersion: "{name} has an old version of the game – ask them to refresh the page 🔄", lowGfx: "Graphics simplified so the game runs smoothly 🐢→🐇",
     title2: 'RACE', resume: '▶ Continue', yourChar: 'Your character', namePh: 'Your name', track: 'Track:',
     play: '▶ Play', editor: '🛠 Editor', share: '📤 Share track', loadCode: '📥 Load code', save: '💾 Save',
     new: '✨ New', sample: '🗺 Sample', load: 'Load', playFriends: 'Play with friends', createRoom: '➕ Create room',
@@ -73,6 +77,8 @@ const D = {
     h: ['None', 'Cap', 'Cat ears', 'Horns', 'Top hat', 'Wizard', 'Propeller', 'Halo', 'Crown'],
   },
   de: {
+    selfOld: 'Deine Spielversion ist alt – lade die Seite neu 🔄',
+    easy: "🐣 Leichter Modus – nach einem Sturz kehrst du dorthin zurück, wo du standest", ghost: "👻 Dein Rekord", oldVersion: "{name} hat eine alte Spielversion – bitte Seite neu laden 🔄", lowGfx: "Grafik vereinfacht, damit das Spiel flüssig läuft 🐢→🐇",
     title2: 'RENNEN', resume: '▶ Weiter', yourChar: 'Deine Figur', namePh: 'Dein Name', track: 'Strecke:',
     play: '▶ Spielen', editor: '🛠 Editor', share: '📤 Strecke teilen', loadCode: '📥 Code laden', save: '💾 Speichern',
     new: '✨ Neu', sample: '🗺 Beispiel', load: 'Laden', playFriends: 'Mit Freunden spielen', createRoom: '➕ Raum erstellen',
@@ -103,6 +109,8 @@ const D = {
     h: ['Keiner', 'Kappe', 'Katzenohren', 'Hörner', 'Zylinder', 'Zauberer', 'Propeller', 'Heiligenschein', 'Krone'],
   },
   fr: {
+    selfOld: 'Ta version du jeu est ancienne – recharge la page 🔄',
+    easy: "🐣 Mode facile – après une chute, tu reviens là où tu étais", ghost: "👻 Ton record", oldVersion: "{name} a une ancienne version du jeu – qu'il recharge la page 🔄", lowGfx: "Graphismes simplifiés pour que le jeu reste fluide 🐢→🐇",
     title2: 'COURSE', resume: '▶ Continuer', yourChar: 'Ton personnage', namePh: 'Ton nom', track: 'Parcours :',
     play: '▶ Jouer', editor: '🛠 Éditeur', share: '📤 Partager', loadCode: '📥 Charger un code', save: '💾 Enregistrer',
     new: '✨ Nouveau', sample: '🗺 Exemple', load: 'Charger', playFriends: 'Jouer avec des amis', createRoom: '➕ Créer un salon',
@@ -133,6 +141,8 @@ const D = {
     h: ['Aucun', 'Casquette', 'Oreilles de chat', 'Cornes', 'Haut-de-forme', 'Sorcier', 'Hélice', 'Auréole', 'Couronne'],
   },
   es: {
+    selfOld: 'Tu versión del juego es antigua – recarga la página 🔄',
+    easy: "🐣 Modo fácil – tras una caída vuelves a donde estabas", ghost: "👻 Tu récord", oldVersion: "{name} tiene una versión antigua del juego – que recargue la página 🔄", lowGfx: "Gráficos simplificados para que el juego vaya fluido 🐢→🐇",
     title2: 'CARRERA', resume: '▶ Continuar', yourChar: 'Tu personaje', namePh: 'Tu nombre', track: 'Pista:',
     play: '▶ Jugar', editor: '🛠 Editor', share: '📤 Compartir', loadCode: '📥 Cargar código', save: '💾 Guardar',
     new: '✨ Nueva', sample: '🗺 Ejemplo', load: 'Cargar', playFriends: 'Jugar con amigos', createRoom: '➕ Crear sala',
@@ -163,6 +173,8 @@ const D = {
     h: ['Ninguno', 'Gorra', 'Orejas de gato', 'Cuernos', 'Chistera', 'Mago', 'Hélice', 'Aureola', 'Corona'],
   },
   it: {
+    selfOld: 'La tua versione del gioco è vecchia – ricarica la pagina 🔄',
+    easy: "🐣 Modalità facile – dopo una caduta torni dove eri", ghost: "👻 Il tuo record", oldVersion: "{name} ha una versione vecchia del gioco – ricarichi la pagina 🔄", lowGfx: "Grafica semplificata per un gioco fluido 🐢→🐇",
     title2: 'CORSA', resume: '▶ Continua', yourChar: 'Il tuo personaggio', namePh: 'Il tuo nome', track: 'Percorso:',
     play: '▶ Gioca', editor: '🛠 Editor', share: '📤 Condividi', loadCode: '📥 Carica codice', save: '💾 Salva',
     new: '✨ Nuovo', sample: '🗺 Esempio', load: 'Carica', playFriends: 'Gioca con gli amici', createRoom: '➕ Crea stanza',
@@ -193,6 +205,8 @@ const D = {
     h: ['Nessuno', 'Berretto', 'Orecchie da gatto', 'Corna', 'Cilindro', 'Mago', 'Elica', 'Aureola', 'Corona'],
   },
   pt: {
+    selfOld: 'A tua versão do jogo é antiga – recarrega a página 🔄',
+    easy: "🐣 Modo fácil – depois de cair voltas para onde estavas", ghost: "👻 O teu recorde", oldVersion: "{name} tem uma versão antiga do jogo – peça para recarregar a página 🔄", lowGfx: "Gráficos simplificados para o jogo correr suave 🐢→🐇",
     title2: 'CORRIDA', resume: '▶ Continuar', yourChar: 'Seu personagem', namePh: 'Seu nome', track: 'Pista:',
     play: '▶ Jogar', editor: '🛠 Editor', share: '📤 Compartilhar', loadCode: '📥 Carregar código', save: '💾 Salvar',
     new: '✨ Nova', sample: '🗺 Exemplo', load: 'Carregar', playFriends: 'Jogar com amigos', createRoom: '➕ Criar sala',
@@ -223,6 +237,8 @@ const D = {
     h: ['Nenhum', 'Boné', 'Orelhas de gato', 'Chifres', 'Cartola', 'Mago', 'Hélice', 'Auréola', 'Coroa'],
   },
   ru: {
+    selfOld: 'У тебя старая версия игры – обнови страницу 🔄',
+    easy: "🐣 Лёгкий режим – после падения возвращаешься туда, где стоял", ghost: "👻 Твой рекорд", oldVersion: "У {name} старая версия игры – пусть обновит страницу 🔄", lowGfx: "Графика упрощена, чтобы игра шла плавно 🐢→🐇",
     title2: 'ГОНКА', resume: '▶ Продолжить', yourChar: 'Твой персонаж', namePh: 'Твоё имя', track: 'Трасса:',
     play: '▶ Играть', editor: '🛠 Редактор', share: '📤 Поделиться', loadCode: '📥 Загрузить код', save: '💾 Сохранить',
     new: '✨ Новая', sample: '🗺 Пример', load: 'Загрузить', playFriends: 'Играть с друзьями', createRoom: '➕ Создать комнату',
@@ -253,6 +269,8 @@ const D = {
     h: ['Без шапки', 'Кепка', 'Кошачьи ушки', 'Рога', 'Цилиндр', 'Волшебник', 'Пропеллер', 'Нимб', 'Корона'],
   },
   zh: {
+    selfOld: '你的游戏版本太旧 – 请刷新页面 🔄',
+    easy: "🐣 简单模式 – 掉下去后回到你刚才站的地方", ghost: "👻 你的纪录", oldVersion: "{name} 的游戏版本太旧 – 请刷新页面 🔄", lowGfx: "已简化画面，让游戏更流畅 🐢→🐇",
     title2: '竞速', resume: '▶ 继续', yourChar: '你的角色', namePh: '你的名字', track: '赛道：',
     play: '▶ 开始', editor: '🛠 编辑器', share: '📤 分享赛道', loadCode: '📥 载入代码', save: '💾 保存',
     new: '✨ 新建', sample: '🗺 示例', load: '载入', playFriends: '和朋友一起玩', createRoom: '➕ 创建房间',
@@ -283,6 +301,8 @@ const D = {
     h: ['无', '鸭舌帽', '猫耳朵', '恶魔角', '礼帽', '巫师帽', '螺旋桨帽', '光环', '皇冠'],
   },
   ja: {
+    selfOld: 'ゲームのバージョンが古いです – ページを再読み込みしてね 🔄',
+    easy: "🐣 かんたんモード – 落ちても立っていた場所に戻る", ghost: "👻 自己ベスト", oldVersion: "{name} は古いバージョンです – ページを再読み込みしてね 🔄", lowGfx: "なめらかに動くようにグラフィックを軽くしました 🐢→🐇",
     title2: 'レース', resume: '▶ つづける', yourChar: 'キャラクター', namePh: 'なまえ', track: 'コース：',
     play: '▶ プレイ', editor: '🛠 エディター', share: '📤 コースを共有', loadCode: '📥 コードを読み込む', save: '💾 保存',
     new: '✨ 新規', sample: '🗺 サンプル', load: '読み込む', playFriends: '友だちと遊ぶ', createRoom: '➕ ルームを作る',
@@ -313,6 +333,8 @@ const D = {
     h: ['なし', 'キャップ', 'ネコ耳', 'ツノ', 'シルクハット', '魔法使い', 'プロペラ', '天使の輪', '王冠'],
   },
   hi: {
+    selfOld: 'तुम्हारा खेल संस्करण पुराना है – पेज रीफ़्रेश करो 🔄',
+    easy: "🐣 आसान मोड – गिरने के बाद तुम वहीं लौटते हो जहाँ खड़े थे", ghost: "👻 तुम्हारा रिकॉर्ड", oldVersion: "{name} के पास खेल का पुराना संस्करण है – पेज रीफ़्रेश करें 🔄", lowGfx: "खेल सहज चले, इसलिए ग्राफ़िक्स सरल किए गए 🐢→🐇",
     title2: 'रेस', resume: '▶ जारी रखें', yourChar: 'तुम्हारा किरदार', namePh: 'तुम्हारा नाम', track: 'ट्रैक:',
     play: '▶ खेलें', editor: '🛠 एडिटर', share: '📤 ट्रैक शेयर करें', loadCode: '📥 कोड लोड करें', save: '💾 सेव करें',
     new: '✨ नया', sample: '🗺 नमूना', load: 'लोड करें', playFriends: 'दोस्तों के साथ खेलें', createRoom: '➕ रूम बनाएँ',
@@ -343,6 +365,8 @@ const D = {
     h: ['कुछ नहीं', 'टोपी', 'बिल्ली के कान', 'सींग', 'हैट', 'जादूगर', 'प्रोपेलर', 'प्रभामंडल', 'मुकुट'],
   },
   ar: {
+    selfOld: 'نسختك من اللعبة قديمة – حدّث الصفحة 🔄',
+    easy: "🐣 الوضع السهل – بعد السقوط تعود إلى حيث كنت تقف", ghost: "👻 رقمك القياسي", oldVersion: "لدى {name} نسخة قديمة من اللعبة – اطلب منه تحديث الصفحة 🔄", lowGfx: "تم تبسيط الرسومات لتعمل اللعبة بسلاسة 🐢→🐇",
     title2: 'سباق', resume: '▶ متابعة', yourChar: 'شخصيتك', namePh: 'اسمك', track: 'المسار:',
     play: '▶ العب', editor: '🛠 المحرر', share: '📤 شارك المسار', loadCode: '📥 تحميل رمز', save: '💾 حفظ',
     new: '✨ جديد', sample: '🗺 مثال', load: 'تحميل', playFriends: 'العب مع الأصدقاء', createRoom: '➕ أنشئ غرفة',

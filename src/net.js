@@ -6,6 +6,8 @@
 import { joinRoom } from 'trystero'
 
 const APP_ID = 'amadej-obby-dirka-2026'
+// Povečaj, ko spremeniš kaj, kar mora imeti vsak igralec v sobi (nove kocke, sporočila ...)
+export const GAME_VERSION = 2
 
 // Ustvari naključno kodo sobe, npr. "KX7P"
 export function newRoomCode() {
@@ -23,8 +25,8 @@ export class Net {
     this.room = joinRoom({ appId: APP_ID, identity: 'none', maxUsers: 8 }, 'soba-' + code)
 
     // Profil vsakega igralca (ime, barva, klobuk)
-    this.profile = this.room.makeUserState('profile', profile)
-    this.profile.set(profile)
+    this.profile = this.room.makeUserState('profile', { ...profile, v: GAME_VERSION })
+    this.profile.set({ ...profile, v: GAME_VERSION })
     this.profile.onChange((value, ctx) => {
       if (ctx.self) return
       if (ctx.removed || !value) events.onLeave(ctx.userId)
@@ -54,7 +56,7 @@ export class Net {
   sendPos(p) { this.posAction.send(p).catch(() => {}) }
   sendEmote(text) { this.emoteAction.send(text).catch(() => {}) }
   sendFinish(data) { this.finishAction.send(data).catch(() => {}) }
-  setProfile(p) { this.profile.set(p) }
+  setProfile(p) { this.profile.set({ ...p, v: GAME_VERSION }) }
 
   startRace(levelCode, levelName, by) {
     const prev = this.race.get()

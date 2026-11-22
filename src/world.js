@@ -57,7 +57,21 @@ export function createScene(canvas) {
     sea.material.map.offset.x += dt * 0.004
   }
 
-  return { renderer, scene, camera, followSun, render, animateSky }
+  // Kakovost slike: 0 = najboljša, vsak korak navzdol je hitrejši (za šibkejše telefone)
+  let quality = 0
+  const setQuality = (q) => {
+    quality = q
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, [2, 1.25, 1, 0.75][q]))
+    const shadows = q < 2
+    if (renderer.shadowMap.enabled !== shadows) {
+      renderer.shadowMap.enabled = shadows
+      scene.traverse((o) => o.material && (o.material.needsUpdate = true))
+    }
+    clouds.visible = q < 3
+    resize()
+  }
+
+  return { renderer, scene, camera, followSun, render, animateSky, setQuality, get quality() { return quality } }
 }
 
 // Kockasti oblaki iz belih škatel

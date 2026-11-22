@@ -18,6 +18,7 @@ export const PHYSICS = {
   coyoteTime: 0.1, // še lahko skočiš malo po tem, ko padeš z roba
   jumpBuffer: 0.12, // skok šteje, tudi če pritisneš malo prezgodaj
   fallLimit: -25, // pod to višino se vrneš na kontrolno točko
+  ledgeAssist: 0.35, // če skok za las ne doseže roba, te dvigne nanj (v kockah)
 }
 
 const HALF_W = 0.3 // pol širine igralca
@@ -39,6 +40,10 @@ export class Player {
     this.groundMover = null // platforma, na kateri stojimo
     this.events = [] // dogodki za glavno zanko: 'death', 'checkpoint', 'finish', 'bounce', 'boost'
     this.lastCheckpoint = null
+    this.easy = false // lahki način: po padcu se vrneš na zadnje varno mesto
+    this.safe = null // zadnje varno mesto (za lahki način)
+    this.groundY = 0 // višina zadnjih tal, na katerih smo stali
+    this.safeTimer = 0
   }
 
   // Postavi igralca na start
@@ -46,11 +51,12 @@ export class Player {
     const s = this.level.find(9) || [0, 0, 0]
     this.spawn.set(s[0], s[1] + 0.5 + EPS, s[2])
     this.lastCheckpoint = null
+    this.safe = null
     this.respawn()
   }
 
   respawn() {
-    this.pos.copy(this.spawn)
+    this.pos.copy(this.easy && this.safe ? this.safe : this.spawn)
     this.vel.set(0, 0, 0)
     this.boost = 0
     this.groundMover = null
@@ -134,6 +140,7 @@ export class Player {
     }
 
     if (!wasGround && this.onGround && fallSpeed > 9) this.events.push('land')
+    if (this.onGround) this.groundY = this.pos.y
 
     // --- posebne kocke ---
     const touch = this.touching(false)
@@ -162,6 +169,11 @@ export class Player {
       }
     }
     if (touch.has('finish')) this.events.push('finish')
+
+    // --- varno mesto: trdna, navadna tla, na katerih stojiš vsaj četrt sekunde ---
+    const plain = this.onGround && !this.groundMover && !under.has('bounce') && !under.has('speed') && !touch.size
+    this.safeTimer = plain ? this.safeTimer + dt : 0
+    if (this.safeTimer > 0.25) (this.safe ||= new THREE.Vector3()).copy(this.pos)
   }
 
   // Premik po eni osi; če se zaletimo v kocko, se ustavimo ob njej
@@ -170,6 +182,21 @@ export class Player {
     this.pos[axis] += d
     const hits = this.overlapping(0)
     if (!hits.length) return
+    // pomoč pri robu: skok je bil za las prekratek – dvignemo te na kocko
+    if (axis !== 'y' && this.vel.y < 4 && PHYSICS.ledgeAssist > 0 && !hits.some((h) => BLOCKS[h[3]].kill)) {
+      const top = Math.max(...hits.map((h) => h[1])) + 0.5
+      const lift = top - this.pos.y
+      // samo do ene kocke nad tlemi, s katerih smo skočili – stena 2 kock ostane stena
+      if (lift > 0 && lift <= PHYSICS.ledgeAssist && top <= this.groundY + 1.05) {
+        const y = this.pos.y
+        this.pos.y = top + EPS
+        if (!this.overlapping(0).length) {
+          this.vel.y = Math.max(this.vel.y, 0)
+          return
+        }
+        this.pos.y = y
+      }
+    }
     const coord = { x: 0, y: 1, z: 2 }[axis]
     if (d > 0) {
       const min = Math.min(...hits.map((h) => h[coord]))

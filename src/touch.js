@@ -43,7 +43,18 @@ export function setupTouch(input, actions, emotes) {
   q('.zone.left').addEventListener('pointermove', (e) => {
     if (e.pointerId !== stickId) return
     let dx = e.clientX - cx, dy = e.clientY - cy
-    const len = Math.hypot(dx, dy)
+    let len = Math.hypot(dx, dy)
+    // če palec zdrsne daleč stran, joystick gre za njim (ne izgubiš ga)
+    if (len > RADIUS * 1.5) {
+      const k = 1 - (RADIUS * 1.5) / len
+      cx += dx * k
+      cy += dy * k
+      stick.style.left = cx + 'px'
+      stick.style.top = cy + 'px'
+      dx = e.clientX - cx
+      dy = e.clientY - cy
+      len = Math.hypot(dx, dy)
+    }
     if (len > RADIUS) { dx *= RADIUS / len; dy *= RADIUS / len }
     knob.style.transform = `translate(${dx}px, ${dy}px)`
     const strength = Math.min(len / RADIUS, 1)
@@ -51,7 +62,10 @@ export function setupTouch(input, actions, emotes) {
       input.touchMove = { forward: 0, right: 0 }
     } else {
       const k = Math.min(1, strength / FULL) / strength / RADIUS
-      input.touchMove = { forward: -dy * k, right: dx * k }
+      let forward = -dy * k, right = dx * k
+      // skoraj naravnost naprej/nazaj = točno naravnost (lažje po ozkih mostovih)
+      if (Math.abs(right) < Math.abs(forward) * 0.2) right = 0
+      input.touchMove = { forward, right }
     }
   })
   const endStick = (e) => {
@@ -81,11 +95,29 @@ export function setupTouch(input, actions, emotes) {
   right.addEventListener('pointerup', endLook)
   right.addEventListener('pointercancel', endLook)
 
-  // --- gumbi ---
-  q('.jump').addEventListener('pointerdown', (e) => {
+  // --- skok: pritisni gumb; če palec povlečeš z gumba, obračaš kamero ---
+  // (tako palec lahko ostane na gumbu in ne rabiš preskakovati med skokom in kamero)
+  const jump = q('.jump')
+  jump.addEventListener('pointerdown', (e) => {
     e.preventDefault()
     actions.jump()
+    jump.classList.add('down')
+    last.set(e.pointerId, [e.clientX, e.clientY])
+    jump.setPointerCapture(e.pointerId)
+    navigator.vibrate?.(8) // rahel tresljaj, da začutiš pritisk
   })
+  jump.addEventListener('pointermove', (e) => {
+    const p = last.get(e.pointerId)
+    if (!p) return
+    input.lookX += (e.clientX - p[0]) * LOOK_SPEED
+    input.lookY += (e.clientY - p[1]) * LOOK_SPEED
+    last.set(e.pointerId, [e.clientX, e.clientY])
+  })
+  const endJump = (e) => { last.delete(e.pointerId); jump.classList.remove('down') }
+  jump.addEventListener('pointerup', endJump)
+  jump.addEventListener('pointercancel', endJump)
+
+  // --- gumbi ---
   root.querySelectorAll('[data-a]').forEach((b) =>
     b.addEventListener('click', () => {
       const a = b.dataset.a

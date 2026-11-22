@@ -7,7 +7,7 @@ import { createScene, LevelView, Avatar, SKINS, HATS, HAT_INFO } from './world.j
 import { Player, PHYSICS } from './player.js'
 import { Input } from './input.js'
 import { Editor } from './editor.js'
-import { Net, newRoomCode } from './net.js'
+import { Net, newRoomCode, GAME_VERSION } from './net.js'
 import { sfx } from './sound.js'
 import { t, lang, setLang, applyDom, LANGS, blockName, emoteText, hatName } from './i18n.js'
 import { setupTouch } from './touch.js'
@@ -30,7 +30,8 @@ const store = {
 
 // ---------- stanje igre ----------
 const canvas = $('game')
-const { scene, camera, followSun, render, animateSky } = createScene(canvas)
+const gfx = createScene(canvas)
+const { scene, camera, followSun, render, animateSky } = gfx
 const particles = new Particles(scene)
 let shake = 0 // stresanje kamere
 const input = new Input(canvas)
@@ -48,7 +49,9 @@ const cam = { yaw: Math.PI, pitch: -0.35, dist: 7 }
 let lastLook = -10 // kdaj je igralec nazadnje sam obrnil kamero
 
 // Na telefonu je igra bolj prizanesljiva: več časa za skok, več nadzora v zraku
-if (input.touch) Object.assign(PHYSICS, { coyoteTime: 0.18, jumpBuffer: 0.2, airAccel: 11 })
+if (input.touch) Object.assign(PHYSICS, { coyoteTime: 0.18, jumpBuffer: 0.2, airAccel: 11, ledgeAssist: 0.6 })
+// Lahki način (privzeto vklopljen na telefonu): po padcu se vrneš na zadnje varno mesto
+player.easy = store.get('easy', input.touch)
 
 // Senca, ki pokaže, kam boš pristal
 const landing = new THREE.Mesh(
@@ -79,6 +82,49 @@ const coins = {
     store.set('own', own.slice(-500))
   },
 }
+// ---------- duh: prosojni ti iz najboljšega teka ----------
+const GHOST_HZ = 20 // kolikokrat na sekundo shranimo položaj
+let ghostRec = [] // snemanje tega teka: x, y, z, smer, x, y, z, smer, ...
+let ghost = null // { avatar, d: posnetek }
+
+function stopGhost() {
+  ghost?.avatar.dispose()
+  ghost = null
+}
+
+function startGhost() {
+  stopGhost()
+  ghostRec = []
+  if (mode !== 'play') return // na dirki ga ne kažemo – tam tekmuješ s prijatelji
+  const saved = store.get('ghost.' + level.contentHash(), null)
+  if (!saved || !Array.isArray(saved.d) || saved.d.length < 8) return
+  const avatar = new Avatar(scene, { name: t('ghost'), color: profile.color, hat: profile.hat })
+  avatar.group.traverse((o) => {
+    if (!o.material) return
+    o.material = o.material.clone()
+    o.material.transparent = true
+    o.material.opacity = 0.35
+    o.material.depthWrite = false
+    o.castShadow = false
+  })
+  ghost = { avatar, d: saved.d }
+}
+
+function updateGhost(dt) {
+  if (!ghost) return
+  const d = ghost.d, n = d.length / 4
+  const f = runTime * GHOST_HZ
+  const i = Math.floor(f)
+  ghost.avatar.setVisible(running && i < n - 1)
+  if (i >= n - 1) return
+  const a = i * 4, b = a + 4, k = f - i
+  const pos = new THREE.Vector3(d[a] + (d[b] - d[a]) * k, d[a + 1] + (d[b + 1] - d[a + 1]) * k, d[a + 2] + (d[b + 2] - d[a + 2]) * k)
+  const speed = Math.hypot(d[b] - d[a], d[b + 2] - d[a + 2]) * GHOST_HZ
+  const ground = Math.abs(d[b + 1] - d[a + 1]) < 0.02
+  ghost.avatar.group.position.copy(pos)
+  ghost.avatar.update(dt, pos, d[b + 3], speed, ground)
+}
+
 const runCoins = new Set() // kovanci, pobrani v tem teku
 let runTaken = new Set() // kovanci te proge, ki so bili izplačani že prej
 let ownedHats = new Set(store.get('hats', ['brez', 'kapa']))
@@ -142,6 +188,7 @@ function startPlay(raceMode = false) {
   levelView.coinState.clear()
   for (const k of runTaken) levelView.setCoinState(k, 'ghost')
   updateCoinHud()
+  startGhost()
   enterGame()
 }
 
@@ -175,6 +222,7 @@ function startEdit() {
   if (mode === 'race') return toast(t('noEditRace'))
   if (input.touch) return toast(t('editorDesktop'))
   mode = 'edit'
+  stopGhost()
   if (me) me.setVisible(false)
   levelView.coinState.clear()
   $('coinHud').hidden = true
@@ -187,6 +235,8 @@ function startEdit() {
 
 function enterGame() {
   lastMode = mode
+  warmup = 2000
+  slowTime = slowFrames = 0
   startMusic()
   $('menu').hidden = true
   $('hud').hidden = false
@@ -256,7 +306,7 @@ setupTouch(input, {
 document.body.classList.toggle('touch', input.touch)
 
 // Za razhroščevanje v konzoli brskalnika (samo med razvojem): obby.player.pos
-if (import.meta.env.DEV) window.obby = { player, cam, get mode() { return mode } }
+if (import.meta.env.DEV) window.obby = { player, cam, gfx, get mode() { return mode }, get ghost() { return ghost } }
 
 // ============================================================
 //  GLAVNA ZANKA – teče ~60x na sekundo
@@ -285,11 +335,32 @@ function frame() {
     menuOrbit(dt)
   }
   updateRemotes(dt)
+  checkSpeed(now - (frame.prev || now))
+  frame.prev = now
   particles.update(dt)
   animateSky(dt, camera.position)
   render()
   requestAnimationFrame(frame)
 }
+
+// Če se igra zatika (manj kot ~40 slik na sekundo), poenostavimo grafiko
+let slowTime = 0, slowFrames = 0, warmup = 0
+function checkSpeed(ms) {
+  if (mode !== 'play' && mode !== 'race') return
+  if (document.hidden || ms > 500) return // zavihek v ozadju ne šteje
+  if ((warmup -= ms) > 0) return // prvi dve sekundi se igra šele "ogreva"
+  slowTime += ms
+  slowFrames++
+  if (slowTime < 3000) return
+  const avg = slowTime / slowFrames
+  slowTime = slowFrames = 0
+  if (avg > 25 && gfx.quality < 3) {
+    gfx.setQuality(gfx.quality + 1)
+    store.set('quality', gfx.quality)
+    if (gfx.quality === 1) toast(t('lowGfx'), 1500) // obvestimo samo prvič
+  }
+}
+gfx.setQuality(store.get('quality', 0))
 
 // V meniju kamera počasi kroži okoli proge
 let orbit = 0
@@ -345,7 +416,14 @@ function updatePlayer(dt) {
     updateCoinHud()
   }
 
-  if (running && !finished) runTime += dt
+  if (running && !finished) {
+    runTime += dt
+    // snemanje za duha
+    const p = player.pos
+    while (ghostRec.length / 4 <= runTime * GHOST_HZ && ghostRec.length < 4 * GHOST_HZ * 900)
+      ghostRec.push(+p.x.toFixed(2), +p.y.toFixed(2), +p.z.toFixed(2), +player.yaw.toFixed(2))
+  }
+  updateGhost(dt)
   $('timer').textContent = formatTime(runTime)
   me.update(dt, player.pos, player.yaw, player.horizontalSpeed, player.onGround)
 
@@ -432,10 +510,12 @@ function handleEvent(ev) {
     const best = store.get(bestKey, null)
     const record = best === null || myTime < best
     if (record) store.set(bestKey, myTime)
+    // duha shranimo ob rekordu (ali če ga za to progo še nimamo)
+    if (record || !store.get('ghost.' + level.contentHash(), null)) store.set('ghost.' + level.contentHash(), { t: myTime, d: ghostRec })
     toast(t('finish', { time: formatTime(myTime) }) + '\n' + (record ? t('record') : t('best', { time: formatTime(best) })) + coinText, 4500)
     if (mode === 'race') {
-      net?.sendFinish({ round: race.round, time: myTime })
-      addResult('me', profile.name || t('me'), myTime)
+      net?.sendFinish({ round: race.round, time: myTime, easy: player.easy })
+      addResult('me', profile.name || t('me'), myTime, player.easy)
     }
   }
 }
@@ -472,6 +552,12 @@ const netEvents = {
   onProfile(userId, p) {
     const r = getRemote(userId)
     r.profile = { name: String(p.name || t('player')).slice(0, 16), color: String(p.color || '#888'), hat: HATS.includes(p.hat) ? p.hat : 'brez' }
+    // različni različici igre se ne razumeta povsem – povej, kdo naj osveži stran
+    if (!r.warned && p.v !== GAME_VERSION) {
+      r.warned = true
+      const msg = p.v > GAME_VERSION ? t('selfOld') : t('oldVersion', { name: r.profile.name })
+      $('menu').hidden ? toast(msg, 5000) : toastMenu(msg)
+    }
     const wasVisible = r.avatar.group.visible
     const pos = r.avatar.group.position.clone()
     r.avatar.dispose()
@@ -519,13 +605,13 @@ const netEvents = {
   onFinish(userId, d) {
     if (!d || d.round !== race.round || !Number.isFinite(d.time)) return
     const r = remotes.get(userId)
-    addResult(userId, r ? r.profile.name : t('player'), d.time)
+    addResult(userId, r ? r.profile.name : t('player'), d.time, !!d.easy)
     if (mode === 'race') toast(t('otherFinished', { name: r ? r.profile.name : t('someone') }), 1500)
   },
 }
 
-function addResult(id, name, time) {
-  if (!results.has(id)) results.set(id, { name, time })
+function addResult(id, name, time, easy = false) {
+  if (!results.has(id)) results.set(id, { name, time, easy })
   renderResults()
 }
 
@@ -535,7 +621,7 @@ function renderResults() {
   const list = [...results.values()].sort((a, b) => a.time - b.time)
   const medals = ['🥇', '🥈', '🥉']
   box.innerHTML = `<h3>${t('results')}</h3><ol>` +
-    list.map((r, i) => `<li>${medals[i] || ''} ${escapeHtml(r.name)} – ${formatTime(r.time)}</li>`).join('') + '</ol>'
+    list.map((r, i) => `<li>${medals[i] || ''} ${escapeHtml(r.name)}${r.easy ? ' 🐣' : ''} – ${formatTime(r.time)}</li>`).join('') + '</ol>'
 }
 
 // ============================================================
@@ -552,6 +638,11 @@ function initMenu() {
   }
 
   // --- lik ---
+  $('easyChk').checked = player.easy
+  $('easyChk').onchange = (e) => {
+    player.easy = e.target.checked
+    store.set('easy', player.easy)
+  }
   $('nameInput').value = profile.name
   $('nameInput').addEventListener('input', (e) => {
     profile.name = e.target.value.trim()

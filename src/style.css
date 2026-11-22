@@ -96,6 +96,8 @@ summary { cursor: pointer; }
 }
 
 /* ---------- Kontrole za telefon ---------- */
+label.check { display: flex; align-items: center; gap: 8px; margin-top: 10px; cursor: pointer; }
+label.check input { width: 20px; height: 20px; accent-color: #ffb800; }
 #touch { display: none; }
 body.touch #touch { display: block; }
 #hud.edit #touch { display: none; }
@@ -117,9 +119,11 @@ body.touch #touch { display: block; }
 }
 #touch .jump {
   position: absolute; right: calc(28px + env(safe-area-inset-right, 0px)); bottom: calc(28px + env(safe-area-inset-bottom, 0px));
-  width: 96px; height: 96px; font-size: 2.6rem;
+  width: 112px; height: 112px; font-size: 2.8rem;
 }
-#touch .jump:active { background: rgba(255, 255, 255, 0.35); }
+/* nevidni rob okoli gumba – tudi pritisk malo zraven šteje */
+#touch .jump::before { content: ''; position: absolute; inset: -26px; border-radius: 50%; }
+#touch .jump.down { background: rgba(255, 255, 255, 0.35); transform: scale(0.93); }
 #touch .topbtns { position: absolute; top: calc(12px + env(safe-area-inset-top, 0px)); right: calc(12px + env(safe-area-inset-right, 0px)); display: flex; gap: 8px; }
 #touch .small { width: 46px; height: 46px; font-size: 1.3rem; }
 #touch .emotes {
