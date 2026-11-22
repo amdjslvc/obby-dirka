@@ -784,6 +784,11 @@ function initMenu() {
   }
 
   // --- lik ---
+  // občutljivost kamere (miška in palec)
+  const setSens = (k) => { input.sensitivity = 0.0025 * k; store.set('sens', k) }
+  $('sensRange').value = store.get('sens', 1)
+  setSens(+$('sensRange').value)
+  $('sensRange').oninput = (e) => setSens(+e.target.value)
   $('easyChk').checked = player.easy
   $('easyChk').onchange = (e) => {
     player.easy = e.target.checked
