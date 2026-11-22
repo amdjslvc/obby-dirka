@@ -220,7 +220,6 @@ function bankCoins(place) {
 
 function startEdit() {
   if (mode === 'race') return toast(t('noEditRace'))
-  if (input.touch) return toast(t('editorDesktop'))
   mode = 'edit'
   stopGhost()
   if (me) me.setVisible(false)
@@ -241,6 +240,7 @@ function enterGame() {
   $('menu').hidden = true
   $('hud').hidden = false
   $('hud').classList.toggle('edit', mode === 'edit')
+  $('hud').classList.toggle('race', mode === 'race')
   $('hotbar').hidden = mode !== 'edit'
   $('timer').hidden = mode === 'edit'
   updateHelp()
@@ -302,6 +302,12 @@ setupTouch(input, {
   restart,
   emote,
   menu: () => showMenu(),
+  // urejevalnik na telefonu
+  edit: () => mode === 'play' && startEdit(),
+  test: () => mode === 'edit' && startPlay(),
+  place: () => editor.place(),
+  remove: () => editor.remove(),
+  undo: () => editor.undo(),
 }, Array.from({ length: EMOTE_COUNT }, (_, i) => emoteText(i)))
 document.body.classList.toggle('touch', input.touch)
 
@@ -762,6 +768,7 @@ function initMenu() {
     s.innerHTML = `<b>${['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '[', ']', '\\', "'", ';'][i]}</b>` +
       (BLOCKS[type].move ? `<span>${{ x: '↔', z: '↕', y: '⇅' }[BLOCKS[type].move]}</span>` : '')
     s.title = blockName(type)
+    s.addEventListener('pointerdown', (e) => { e.stopPropagation(); editor.select(i) }) // na telefonu tapneš kocko
     $('hotbar').append(s)
   })
   const nameEl = document.createElement('div')

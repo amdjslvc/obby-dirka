@@ -15,6 +15,8 @@ export class Input {
     this.touch = matchMedia('(pointer: coarse)').matches
     this.touchPlaying = false
     this.touchMove = { forward: 0, right: 0 }
+    this.touchUp = false // gumba ⬆ ⬇ v urejevalniku na telefonu
+    this.touchDown = false
 
     window.addEventListener('keydown', (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return

@@ -16,10 +16,19 @@ export function setupTouch(input, actions, emotes) {
     <div class="zone left"></div>
     <div class="zone right"></div>
     <div class="stick" hidden><div class="knob"></div></div>
-    <button class="tbtn jump">⤒</button>
+    <button class="tbtn jump play-only">⤒</button>
+    <div class="editbtns edit-only">
+      <button class="tbtn mid" data-hold="touchUp">⬆</button>
+      <button class="tbtn mid" data-hold="touchDown">⬇</button>
+      <button class="tbtn mid remove" data-a="remove">⛏</button>
+      <button class="tbtn place" data-a="place">➕</button>
+    </div>
     <div class="topbtns">
-      <button class="tbtn small" data-a="emote">😀</button>
-      <button class="tbtn small" data-a="restart">↺</button>
+      <button class="tbtn small play-only" data-a="emote">😀</button>
+      <button class="tbtn small play-only" data-a="restart">↺</button>
+      <button class="tbtn small play-only no-race" data-a="edit">🛠</button>
+      <button class="tbtn small edit-only" data-a="undo">↶</button>
+      <button class="tbtn small edit-only" data-a="test">▶</button>
       <button class="tbtn small" data-a="menu">☰</button>
     </div>
     <div class="emotes" hidden>${emotes.map((e, i) => `<button class="tbtn small" data-e="${i}">${e}</button>`).join('')}</div>
@@ -117,12 +126,22 @@ export function setupTouch(input, actions, emotes) {
   jump.addEventListener('pointerup', endJump)
   jump.addEventListener('pointercancel', endJump)
 
+  // --- urejevalnik: gor/dol, dokler držiš gumb ---
+  root.querySelectorAll('[data-hold]').forEach((b) => {
+    const k = b.dataset.hold
+    b.addEventListener('pointerdown', (e) => { e.preventDefault(); input[k] = true; b.setPointerCapture(e.pointerId) })
+    const off = () => (input[k] = false)
+    b.addEventListener('pointerup', off)
+    b.addEventListener('pointercancel', off)
+  })
+
   // --- gumbi ---
   root.querySelectorAll('[data-a]').forEach((b) =>
     b.addEventListener('click', () => {
       const a = b.dataset.a
       if (a === 'emote') emoteBox.hidden = !emoteBox.hidden
       else actions[a]()
+      if (a === 'place' || a === 'remove') navigator.vibrate?.(10)
     })
   )
   root.querySelectorAll('[data-e]').forEach((b) =>

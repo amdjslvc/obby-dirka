@@ -91,6 +91,10 @@ export class Editor {
     return null
   }
 
+  // Za telefon: gumba ➕ in ⛏
+  place() { this.click(2) }
+  remove() { this.click(0) }
+
   click(button) {
     const t = this.target()
     if (!t) return
@@ -138,8 +142,8 @@ export class Editor {
     const fx = -Math.sin(this.yaw), fz = -Math.cos(this.yaw)
     this.pos.x += (fx * m.forward + Math.cos(this.yaw) * m.right) * speed * dt
     this.pos.z += (fz * m.forward - Math.sin(this.yaw) * m.right) * speed * dt
-    if (this.input.down('Space')) this.pos.y += speed * dt
-    if (this.input.down('ShiftLeft', 'ShiftRight')) this.pos.y -= speed * dt
+    if (this.input.down('Space') || this.input.touchUp) this.pos.y += speed * dt
+    if (this.input.down('ShiftLeft', 'ShiftRight') || this.input.touchDown) this.pos.y -= speed * dt
 
     this.camera.position.copy(this.pos)
     this.camera.rotation.set(this.pitch, this.yaw, 0, 'YXZ')
