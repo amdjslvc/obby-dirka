@@ -27,10 +27,12 @@ export const BLOCKS = {
   16: { name: 'Kovanec 🪙', color: 0xffcc33, coin: true, solid: false },
   // Izginjajoča: ko stopiš nanjo, se zatrese in za nekaj sekund izgine (glej player.js)
   17: { name: 'Izginjajoča', color: 0xd9b8ff, fade: true, glow: 0.2 },
+  // Portal: ni trden; ko greš vanj, te prenese do naslednjega portala (zadnji do prvega)
+  18: { name: 'Portal', color: 0x7a2cff, portal: true, solid: false, glow: 0.9 },
 }
 
 // Vrstni red v orodni vrstici urejevalnika (tipke 1..9, 0, -, =)
-export const HOTBAR = [1, 2, 3, 4, 12, 5, 6, 7, 8, 10, 9, 11, 16, 13, 14, 15, 17]
+export const HOTBAR = [1, 2, 3, 4, 12, 5, 6, 7, 8, 10, 9, 11, 16, 13, 14, 15, 17, 18]
 
 const key = (x, y, z) => `${x},${y},${z}`
 

@@ -191,8 +191,8 @@ export class LevelView {
         roughness: b.ice || b.glass ? 0.15 : 0.8,
         emissive: b.glow ? b.color : 0x000000,
         emissiveIntensity: b.glow || 0,
-        transparent: !!b.glass,
-        opacity: b.glass ? 0.45 : 1,
+        transparent: !!(b.glass || b.portal),
+        opacity: b.glass ? 0.45 : b.portal ? 0.6 : 1,
       })
     }
   }
@@ -211,11 +211,14 @@ export class LevelView {
     }
     const mat = new THREE.Matrix4()
     this.fadeMesh = null
+    this.portalMesh = null
+    this.portals = []
     for (const [t, list] of Object.entries(byType)) {
       const mesh = new THREE.InstancedMesh(this.geo, this.materials[t], list.length)
       if (BLOCKS[t].fade) { this.fadeMesh = mesh; this.fadeList = list; mesh.frustumCulled = false }
+      if (BLOCKS[t].portal) { this.portalMesh = mesh; this.portals = list; mesh.frustumCulled = false }
       list.forEach(([x, y, z], i) => mesh.setMatrixAt(i, mat.makeTranslation(x, y, z)))
-      mesh.castShadow = !BLOCKS[t].glass
+      mesh.castShadow = !BLOCKS[t].glass && !BLOCKS[t].portal
       mesh.receiveShadow = true
       this.scene.add(mesh)
       this.meshes.push(mesh)
@@ -285,6 +288,17 @@ export class LevelView {
   animate(time) {
     this.materials[6].emissiveIntensity = 0.7 + Math.sin(time * 4) * 0.25
     this.materials[10].emissiveIntensity = 0.3 + Math.sin(time * 3) * 0.15
+    this.materials[18].emissiveIntensity = 0.7 + Math.sin(time * 6) * 0.3
+    this.materials[18].opacity = 0.5 + Math.sin(time * 6) * 0.15
+    // portali: manjša vrteča se kocka, da se ločijo od trdnih kock
+    if (this.portalMesh) {
+      const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(0.75, 0.95, 0.75)
+      this.portals.forEach(([x, y, z], i) => {
+        q.setFromEuler(new THREE.Euler(0, time * 2 + x + z, 0))
+        this.portalMesh.setMatrixAt(i, m.compose(new THREE.Vector3(x, y, z), q, s))
+      })
+      this.portalMesh.instanceMatrix.needsUpdate = true
+    }
     if (!this.coinMesh) return
     const m = new THREE.Matrix4(), q = new THREE.Quaternion(), p = new THREE.Vector3(), s = new THREE.Vector3()
     const gold = new THREE.Color(0xffcc33), ghost = new THREE.Color(0x8fa3c0)

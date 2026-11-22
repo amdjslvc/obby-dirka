@@ -42,7 +42,7 @@ const D = {
     savedTip: 'Naloži (Shift+klik: izbriši)', loadedName: 'Naložena »{name}«', loadedLink: 'Naložena proga »{name}« iz povezave 🎉',
     sampleName: 'Prva proga', trackDefault: 'Proga',
     e: ['👋 Živjo!', '😂 Haha', '🏆 GG!', '⏳ Počakaj!'],
-    b: ['Kamen', 'Trava', 'Les', 'Opeka', 'Led', 'Lava', 'Trampolin', 'Pospešek', 'Start', 'Kontrolna točka', 'Cilj', 'Steklo', 'Premična ↔ levo-desno', 'Premična ↕ naprej-nazaj', 'Dvigalo ⇅ gor-dol', 'Kovanec 🪙', 'Izginjajoča'],
+    b: ['Kamen', 'Trava', 'Les', 'Opeka', 'Led', 'Lava', 'Trampolin', 'Pospešek', 'Start', 'Kontrolna točka', 'Cilj', 'Steklo', 'Premična ↔ levo-desno', 'Premična ↕ naprej-nazaj', 'Dvigalo ⇅ gor-dol', 'Kovanec 🪙', 'Izginjajoča', 'Portal'],
     h: ['Brez', 'Kapa', 'Mačja ušesa', 'Rogovi', 'Cilinder', 'Čarovnik', 'Propeler', 'Svetniški sij', 'Krona'],
   },
   en: {
@@ -75,7 +75,7 @@ const D = {
     savedTip: 'Load (Shift+click: delete)', loadedName: 'Loaded “{name}”', loadedLink: 'Loaded track “{name}” from link 🎉',
     sampleName: 'First track', trackDefault: 'Track',
     e: ['👋 Hi!', '😂 Haha', '🏆 GG!', '⏳ Wait!'],
-    b: ['Stone', 'Grass', 'Wood', 'Brick', 'Ice', 'Lava', 'Trampoline', 'Speed boost', 'Start', 'Checkpoint', 'Finish', 'Glass', 'Moving ↔ left-right', 'Moving ↕ forward-back', 'Elevator ⇅ up-down', 'Coin 🪙', 'Vanishing'],
+    b: ['Stone', 'Grass', 'Wood', 'Brick', 'Ice', 'Lava', 'Trampoline', 'Speed boost', 'Start', 'Checkpoint', 'Finish', 'Glass', 'Moving ↔ left-right', 'Moving ↕ forward-back', 'Elevator ⇅ up-down', 'Coin 🪙', 'Vanishing', 'Portal'],
     h: ['None', 'Cap', 'Cat ears', 'Horns', 'Top hat', 'Wizard', 'Propeller', 'Halo', 'Crown'],
   },
   de: {
@@ -108,7 +108,7 @@ const D = {
     savedTip: 'Laden (Shift+Klick: löschen)', loadedName: '„{name}“ geladen', loadedLink: 'Strecke „{name}“ aus dem Link geladen 🎉',
     sampleName: 'Erste Strecke', trackDefault: 'Strecke',
     e: ['👋 Hallo!', '😂 Haha', '🏆 GG!', '⏳ Warte!'],
-    b: ['Stein', 'Gras', 'Holz', 'Ziegel', 'Eis', 'Lava', 'Trampolin', 'Turbo', 'Start', 'Checkpoint', 'Ziel', 'Glas', 'Beweglich ↔ links-rechts', 'Beweglich ↕ vor-zurück', 'Aufzug ⇅ hoch-runter', 'Münze 🪙', 'Verschwindend'],
+    b: ['Stein', 'Gras', 'Holz', 'Ziegel', 'Eis', 'Lava', 'Trampolin', 'Turbo', 'Start', 'Checkpoint', 'Ziel', 'Glas', 'Beweglich ↔ links-rechts', 'Beweglich ↕ vor-zurück', 'Aufzug ⇅ hoch-runter', 'Münze 🪙', 'Verschwindend', 'Portal'],
     h: ['Keiner', 'Kappe', 'Katzenohren', 'Hörner', 'Zylinder', 'Zauberer', 'Propeller', 'Heiligenschein', 'Krone'],
   },
   fr: {
@@ -141,7 +141,7 @@ const D = {
     savedTip: 'Charger (Maj+clic : supprimer)', loadedName: '« {name} » chargé', loadedLink: 'Parcours « {name} » chargé depuis le lien 🎉',
     sampleName: 'Premier parcours', trackDefault: 'Parcours',
     e: ['👋 Salut !', '😂 Haha', '🏆 GG !', '⏳ Attends !'],
-    b: ['Pierre', 'Herbe', 'Bois', 'Brique', 'Glace', 'Lave', 'Trampoline', 'Turbo', 'Départ', 'Point de contrôle', 'Arrivée', 'Verre', 'Mobile ↔ gauche-droite', 'Mobile ↕ avant-arrière', 'Ascenseur ⇅ haut-bas', 'Pièce 🪙', 'Disparaissant'],
+    b: ['Pierre', 'Herbe', 'Bois', 'Brique', 'Glace', 'Lave', 'Trampoline', 'Turbo', 'Départ', 'Point de contrôle', 'Arrivée', 'Verre', 'Mobile ↔ gauche-droite', 'Mobile ↕ avant-arrière', 'Ascenseur ⇅ haut-bas', 'Pièce 🪙', 'Disparaissant', 'Portail'],
     h: ['Aucun', 'Casquette', 'Oreilles de chat', 'Cornes', 'Haut-de-forme', 'Sorcier', 'Hélice', 'Auréole', 'Couronne'],
   },
   es: {
@@ -174,7 +174,7 @@ const D = {
     savedTip: 'Cargar (Shift+clic: borrar)', loadedName: '«{name}» cargada', loadedLink: 'Pista «{name}» cargada desde el enlace 🎉',
     sampleName: 'Primera pista', trackDefault: 'Pista',
     e: ['👋 ¡Hola!', '😂 Jaja', '🏆 ¡GG!', '⏳ ¡Espera!'],
-    b: ['Piedra', 'Hierba', 'Madera', 'Ladrillo', 'Hielo', 'Lava', 'Trampolín', 'Turbo', 'Salida', 'Punto de control', 'Meta', 'Cristal', 'Móvil ↔ izquierda-derecha', 'Móvil ↕ adelante-atrás', 'Ascensor ⇅ arriba-abajo', 'Moneda 🪙', 'Desaparece'],
+    b: ['Piedra', 'Hierba', 'Madera', 'Ladrillo', 'Hielo', 'Lava', 'Trampolín', 'Turbo', 'Salida', 'Punto de control', 'Meta', 'Cristal', 'Móvil ↔ izquierda-derecha', 'Móvil ↕ adelante-atrás', 'Ascensor ⇅ arriba-abajo', 'Moneda 🪙', 'Desaparece', 'Portal'],
     h: ['Ninguno', 'Gorra', 'Orejas de gato', 'Cuernos', 'Chistera', 'Mago', 'Hélice', 'Aureola', 'Corona'],
   },
   it: {
@@ -207,7 +207,7 @@ const D = {
     savedTip: 'Carica (Shift+clic: elimina)', loadedName: '«{name}» caricato', loadedLink: 'Percorso «{name}» caricato dal link 🎉',
     sampleName: 'Primo percorso', trackDefault: 'Percorso',
     e: ['👋 Ciao!', '😂 Ahah', '🏆 GG!', '⏳ Aspetta!'],
-    b: ['Pietra', 'Erba', 'Legno', 'Mattone', 'Ghiaccio', 'Lava', 'Trampolino', 'Turbo', 'Partenza', 'Checkpoint', 'Traguardo', 'Vetro', 'Mobile ↔ sinistra-destra', 'Mobile ↕ avanti-indietro', 'Ascensore ⇅ su-giù', 'Moneta 🪙', 'Che scompare'],
+    b: ['Pietra', 'Erba', 'Legno', 'Mattone', 'Ghiaccio', 'Lava', 'Trampolino', 'Turbo', 'Partenza', 'Checkpoint', 'Traguardo', 'Vetro', 'Mobile ↔ sinistra-destra', 'Mobile ↕ avanti-indietro', 'Ascensore ⇅ su-giù', 'Moneta 🪙', 'Che scompare', 'Portale'],
     h: ['Nessuno', 'Berretto', 'Orecchie da gatto', 'Corna', 'Cilindro', 'Mago', 'Elica', 'Aureola', 'Corona'],
   },
   pt: {
@@ -240,7 +240,7 @@ const D = {
     savedTip: 'Carregar (Shift+clique: apagar)', loadedName: '“{name}” carregada', loadedLink: 'Pista “{name}” carregada do link 🎉',
     sampleName: 'Primeira pista', trackDefault: 'Pista',
     e: ['👋 Oi!', '😂 Haha', '🏆 GG!', '⏳ Espera!'],
-    b: ['Pedra', 'Grama', 'Madeira', 'Tijolo', 'Gelo', 'Lava', 'Trampolim', 'Turbo', 'Largada', 'Checkpoint', 'Chegada', 'Vidro', 'Móvel ↔ esquerda-direita', 'Móvel ↕ frente-trás', 'Elevador ⇅ sobe-desce', 'Moeda 🪙', 'Desaparece'],
+    b: ['Pedra', 'Grama', 'Madeira', 'Tijolo', 'Gelo', 'Lava', 'Trampolim', 'Turbo', 'Largada', 'Checkpoint', 'Chegada', 'Vidro', 'Móvel ↔ esquerda-direita', 'Móvel ↕ frente-trás', 'Elevador ⇅ sobe-desce', 'Moeda 🪙', 'Desaparece', 'Portal'],
     h: ['Nenhum', 'Boné', 'Orelhas de gato', 'Chifres', 'Cartola', 'Mago', 'Hélice', 'Auréola', 'Coroa'],
   },
   ru: {
@@ -273,7 +273,7 @@ const D = {
     savedTip: 'Загрузить (Shift+клик: удалить)', loadedName: '«{name}» загружена', loadedLink: 'Трасса «{name}» загружена по ссылке 🎉',
     sampleName: 'Первая трасса', trackDefault: 'Трасса',
     e: ['👋 Привет!', '😂 Ха-ха', '🏆 GG!', '⏳ Подожди!'],
-    b: ['Камень', 'Трава', 'Дерево', 'Кирпич', 'Лёд', 'Лава', 'Батут', 'Ускорение', 'Старт', 'Чекпоинт', 'Финиш', 'Стекло', 'Движется ↔ влево-вправо', 'Движется ↕ вперёд-назад', 'Лифт ⇅ вверх-вниз', 'Монета 🪙', 'Исчезающий'],
+    b: ['Камень', 'Трава', 'Дерево', 'Кирпич', 'Лёд', 'Лава', 'Батут', 'Ускорение', 'Старт', 'Чекпоинт', 'Финиш', 'Стекло', 'Движется ↔ влево-вправо', 'Движется ↕ вперёд-назад', 'Лифт ⇅ вверх-вниз', 'Монета 🪙', 'Исчезающий', 'Портал'],
     h: ['Без шапки', 'Кепка', 'Кошачьи ушки', 'Рога', 'Цилиндр', 'Волшебник', 'Пропеллер', 'Нимб', 'Корона'],
   },
   zh: {
@@ -306,7 +306,7 @@ const D = {
     savedTip: '载入（Shift+点击：删除）', loadedName: '已载入「{name}」', loadedLink: '已从链接载入赛道「{name}」🎉',
     sampleName: '第一条赛道', trackDefault: '赛道',
     e: ['👋 你好！', '😂 哈哈', '🏆 GG！', '⏳ 等等！'],
-    b: ['石头', '草地', '木头', '砖块', '冰', '岩浆', '蹦床', '加速板', '起点', '检查点', '终点', '玻璃', '移动 ↔ 左右', '移动 ↕ 前后', '电梯 ⇅ 上下', '金币 🪙', '消失方块'],
+    b: ['石头', '草地', '木头', '砖块', '冰', '岩浆', '蹦床', '加速板', '起点', '检查点', '终点', '玻璃', '移动 ↔ 左右', '移动 ↕ 前后', '电梯 ⇅ 上下', '金币 🪙', '消失方块', '传送门'],
     h: ['无', '鸭舌帽', '猫耳朵', '恶魔角', '礼帽', '巫师帽', '螺旋桨帽', '光环', '皇冠'],
   },
   ja: {
@@ -339,7 +339,7 @@ const D = {
     savedTip: '読み込む（Shift+クリック：削除）', loadedName: '「{name}」を読み込みました', loadedLink: 'リンクからコース「{name}」を読み込みました 🎉',
     sampleName: 'はじめてのコース', trackDefault: 'コース',
     e: ['👋 やあ！', '😂 ハハ', '🏆 GG！', '⏳ 待って！'],
-    b: ['石', '草', '木', 'レンガ', '氷', '溶岩', 'トランポリン', 'ダッシュ板', 'スタート', 'チェックポイント', 'ゴール', 'ガラス', '動く床 ↔ 左右', '動く床 ↕ 前後', 'エレベーター ⇅ 上下', 'コイン 🪙', '消えるブロック'],
+    b: ['石', '草', '木', 'レンガ', '氷', '溶岩', 'トランポリン', 'ダッシュ板', 'スタート', 'チェックポイント', 'ゴール', 'ガラス', '動く床 ↔ 左右', '動く床 ↕ 前後', 'エレベーター ⇅ 上下', 'コイン 🪙', '消えるブロック', 'ポータル'],
     h: ['なし', 'キャップ', 'ネコ耳', 'ツノ', 'シルクハット', '魔法使い', 'プロペラ', '天使の輪', '王冠'],
   },
   hi: {
@@ -372,7 +372,7 @@ const D = {
     savedTip: 'लोड करें (Shift+क्लिक: मिटाएँ)', loadedName: '“{name}” लोड हुआ', loadedLink: 'लिंक से ट्रैक “{name}” लोड हुआ 🎉',
     sampleName: 'पहला ट्रैक', trackDefault: 'ट्रैक',
     e: ['👋 हाय!', '😂 हाहा', '🏆 GG!', '⏳ रुको!'],
-    b: ['पत्थर', 'घास', 'लकड़ी', 'ईंट', 'बर्फ़', 'लावा', 'ट्रैम्पोलिन', 'स्पीड बूस्ट', 'स्टार्ट', 'चेकपॉइंट', 'फ़िनिश', 'काँच', 'चलता ↔ बाएँ-दाएँ', 'चलता ↕ आगे-पीछे', 'लिफ़्ट ⇅ ऊपर-नीचे', 'सिक्का 🪙', 'गायब होने वाला'],
+    b: ['पत्थर', 'घास', 'लकड़ी', 'ईंट', 'बर्फ़', 'लावा', 'ट्रैम्पोलिन', 'स्पीड बूस्ट', 'स्टार्ट', 'चेकपॉइंट', 'फ़िनिश', 'काँच', 'चलता ↔ बाएँ-दाएँ', 'चलता ↕ आगे-पीछे', 'लिफ़्ट ⇅ ऊपर-नीचे', 'सिक्का 🪙', 'गायब होने वाला', 'पोर्टल'],
     h: ['कुछ नहीं', 'टोपी', 'बिल्ली के कान', 'सींग', 'हैट', 'जादूगर', 'प्रोपेलर', 'प्रभामंडल', 'मुकुट'],
   },
   ar: {
@@ -405,7 +405,7 @@ const D = {
     savedTip: 'تحميل (Shift+نقرة: حذف)', loadedName: 'تم تحميل «{name}»', loadedLink: 'تم تحميل المسار «{name}» من الرابط 🎉',
     sampleName: 'المسار الأول', trackDefault: 'مسار',
     e: ['👋 مرحبًا!', '😂 هههه', '🏆 GG!', '⏳ انتظر!'],
-    b: ['حجر', 'عشب', 'خشب', 'طوب', 'جليد', 'حمم', 'ترامبولين', 'تسريع', 'البداية', 'نقطة تفتيش', 'النهاية', 'زجاج', 'متحرك ↔ يمين-يسار', 'متحرك ↕ أمام-خلف', 'مصعد ⇅ أعلى-أسفل', 'عملة 🪙', 'يختفي'],
+    b: ['حجر', 'عشب', 'خشب', 'طوب', 'جليد', 'حمم', 'ترامبولين', 'تسريع', 'البداية', 'نقطة تفتيش', 'النهاية', 'زجاج', 'متحرك ↔ يمين-يسار', 'متحرك ↕ أمام-خلف', 'مصعد ⇅ أعلى-أسفل', 'عملة 🪙', 'يختفي', 'بوابة'],
     h: ['بدون', 'قبعة', 'آذان قطة', 'قرون', 'قبعة رسمية', 'ساحر', 'مروحة', 'هالة', 'تاج'],
   },
 }

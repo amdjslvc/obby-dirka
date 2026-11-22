@@ -48,6 +48,8 @@ export class Player {
     this.safe = null // zadnje varno mesto (za lahki način)
     this.groundY = 0 // višina zadnjih tal, na katerih smo stali
     this.fade = new Map() // izginjajoče kocke: "x,y,z" -> sekunde, odkar smo stopili nanje
+    this.inPortal = false // dokler stojiš v portalu, te ne prenese še enkrat
+    this.portalFrom = null
     this.safeTimer = 0
   }
 
@@ -185,6 +187,21 @@ export class Player {
     }
     if (touch.has('finish')) this.events.push('finish')
 
+    // --- portal: prenese te do naslednjega ---
+    const portal = this.cellsTouched((b) => b.portal)[0]
+    if (portal && !this.inPortal) {
+      const all = [...this.level.blocks()].filter((b) => BLOCKS[b[3]].portal)
+        .sort((a, b) => a[0] - b[0] || a[2] - b[2] || a[1] - b[1]) // vrstni red: po x, nato z, nato y
+      const i = all.findIndex((b) => `${b[0]},${b[1]},${b[2]}` === portal)
+      const next = all[(i + 1) % all.length]
+      if (all.length > 1) {
+        this.portalFrom = this.pos.clone()
+        this.pos.set(next[0], next[1] - 0.5 + EPS, next[2])
+        this.events.push('portal')
+      }
+    }
+    this.inPortal = !!this.cellsTouched((b) => b.portal).length
+
     // --- varno mesto: trdna, navadna tla, na katerih stojiš vsaj četrt sekunde ---
     const plain = this.onGround && !this.groundMover && !under.has('bounce') && !under.has('speed') && !touch.size
     this.safeTimer = plain ? this.safeTimer + dt : 0
@@ -262,12 +279,17 @@ export class Player {
 
   // Kovanci, ki se jih dotikamo (vrne seznam "x,y,z")
   coinsTouched() {
+    return this.cellsTouched((b) => b.coin)
+  }
+
+  // Netrdne kocke (kovanci, portali), v katerih smo – test(lastnosti kocke)
+  cellsTouched(test) {
     const cell = (v) => Math.floor(v + 0.5)
     const out = []
     for (let x = cell(this.pos.x - HALF_W); x <= cell(this.pos.x + HALF_W); x++)
       for (let y = cell(this.pos.y); y <= cell(this.pos.y + HEIGHT); y++)
         for (let z = cell(this.pos.z - HALF_W); z <= cell(this.pos.z + HALF_W); z++)
-          if (BLOCKS[this.level.get(x, y, z)]?.coin) out.push(`${x},${y},${z}`)
+          if (BLOCKS[this.level.get(x, y, z)] && test(BLOCKS[this.level.get(x, y, z)])) out.push(`${x},${y},${z}`)
     return out
   }
 

@@ -50,7 +50,7 @@ Na telefonu ti igra malo pomaga:
 | Ctrl | hitreje |
 | desni klik | postavi kocko |
 | levi klik | pobriši kocko |
-| kolešček, 1–9, 0, -, =, [, ], \\, ', ; | izberi kocko |
+| kolešček, 1–9, 0, -, =, [, ], \\, ', ;, , | izberi kocko |
 | Ctrl+Z | razveljavi |
 | E | preizkusi progo |
 
@@ -72,6 +72,7 @@ Na telefonu ti igra malo pomaga:
 
 | 🪙 Kovanec | poberi ga; šteje se, ko prideš na cilj |
 | 🟪 Izginjajoča | ko stopiš nanjo, se zatrese in izgine za 3 sekunde – teci! |
+| 🌀 Portal | ko greš vanj, te prenese do naslednjega portala (po vrsti od leve proti desni, zadnji vodi nazaj do prvega) |
 
 Premične kocke se vedno premikajo v pozitivni smeri od mesta, kamor jih postaviš.
 Sosednje kocke iste vrste se premikajo skupaj, zato lahko zgradiš večjo platformo.
@@ -121,7 +122,7 @@ JavaScript je podoben Pythonu: `function` je `def`, `{ }` zamenja zamik,
 
 1. V `PHYSICS` spremeni moč skoka ali gravitacijo in poskusi, kako se igra spremeni.
 2. Dodaj nov emote v `EMOTES` (main.js) in nov klobuk v `HAT_INFO` (world.js, obliko nariši v `addHat`).
-3. Dodaj novo kocko, npr. **lepljivo** (počasna hoja) ali **teleport**.
+3. Dodaj novo kocko, npr. **lepljivo** (počasna hoja) ali **tekoči trak**. Za zgled poglej, kako sta narejena portal in izginjajoča kocka.
 4. Premične platforme z nastavljivo dolžino poti in hitrostjo (zdaj sta v `movers.js` za vse enaki).
 5. Še več stvari za kovance: barve, sledi za likom, plesi.
 6. Nov način v sobi, npr. kralj hriba (poglej, kako je narejeno lovljenje v `main.js`).

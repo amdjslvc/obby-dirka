@@ -346,6 +346,11 @@ function frame() {
   lastTime = now
   time += dt
   levelView.animate(time)
+  // iskrice okoli portalov
+  if (levelView.portals.length && Math.random() < dt * 12) {
+    const [x, y, z] = levelView.portals[Math.floor(Math.random() * levelView.portals.length)]
+    particles.burst(new THREE.Vector3(x, y - 0.3, z), FX.portalSpark)
+  }
   const playing = mode === 'play' || mode === 'race' || mode === 'tag'
   levelView.animateFade(time, playing ? player.fade : new Map())
 
@@ -456,7 +461,7 @@ function updatePlayer(dt) {
   me.update(dt, player.pos, player.yaw, player.horizontalSpeed, player.onGround)
 
   // --- senca pristanka (samo v zraku) ---
-  const below = player.onGround ? null : level.raycast(player.pos, DOWN, 40, (t) => BLOCKS[t].coin)
+  const below = player.onGround ? null : level.raycast(player.pos, DOWN, 40, (t) => BLOCKS[t].solid === false)
   landing.visible = !!below
   if (below) landing.position.set(player.pos.x, below.y + 0.51, player.pos.z)
 
@@ -476,7 +481,7 @@ function updatePlayer(dt) {
     -Math.sin(cam.pitch),
     Math.cos(cam.yaw) * Math.cos(cam.pitch)
   )
-  const hit = level.raycast(head, back, cam.dist, (t) => BLOCKS[t].glass || BLOCKS[t].coin)
+  const hit = level.raycast(head, back, cam.dist, (t) => BLOCKS[t].glass || BLOCKS[t].solid === false)
   const dist = hit ? Math.max(0.6, hit.dist - 0.3) : cam.dist
   camera.position.copy(head).addScaledVector(back, dist)
   camera.lookAt(head)
@@ -514,6 +519,7 @@ function handleEvent(ev) {
     if (player.deathPos) particles.burst(player.deathPos.clone().setY(player.deathPos.y + 0.9), FX.death)
   }
   if (ev === 'jump') particles.burst(feet, FX.dust)
+  if (ev === 'portal') { sfx('boost'); particles.burst(feet, FX.portal); particles.burst(player.portalFrom, FX.portal) }
   if (ev === 'fade') { sfx('tick'); particles.burst(feet, FX.fade) }
   if (ev === 'land') particles.burst(feet, FX.land)
   if (ev === 'bounce') { sfx('bounce'); particles.burst(feet, FX.bounce) }
@@ -898,7 +904,7 @@ function initMenu() {
     const s = document.createElement('div')
     s.className = 'slot'
     s.style.background = '#' + BLOCKS[type].color.toString(16).padStart(6, '0')
-    s.innerHTML = `<b>${['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '[', ']', '\\', "'", ';'][i]}</b>` +
+    s.innerHTML = `<b>${['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '[', ']', '\\', "'", ';', ','][i]}</b>` +
       (BLOCKS[type].move ? `<span>${{ x: '↔', z: '↕', y: '⇅' }[BLOCKS[type].move]}</span>` : '')
     s.title = blockName(type)
     s.addEventListener('pointerdown', (e) => { e.stopPropagation(); editor.select(i) }) // na telefonu tapneš kocko
