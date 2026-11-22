@@ -7,7 +7,7 @@ import { joinRoom } from 'trystero'
 
 const APP_ID = 'amadej-obby-dirka-2026'
 // Povečaj, ko spremeniš kaj, kar mora imeti vsak igralec v sobi (nove kocke, sporočila ...)
-export const GAME_VERSION = 3
+export const GAME_VERSION = 4
 
 // Ustvari naključno kodo sobe, npr. "KX7P"
 export function newRoomCode() {
@@ -18,7 +18,7 @@ export function newRoomCode() {
 }
 
 export class Net {
-  // events: { onProfile, onLeave, onPos, onEmote, onRace, onFinish }
+  // events: { onProfile, onLeave, onPos, onEmote, onRace, onFinish, onTag }
   constructor(code, profile, events) {
     this.code = code
     this.events = events
@@ -50,6 +50,14 @@ export class Net {
     this.finishAction = this.room.makeAction('finish')
     this.finishAction.onMessage((data, { userId }) => events.onFinish(userId, data))
 
+    // Lovljenje: skupno stanje – kdo je lovec, od kdaj, do kdaj traja igra
+    this.tag = this.room.makeState('tag', null, { maxBytes: 65536 })
+    this.tag.onChange((value) => value && events.onTag(value), { replay: true })
+
+    // Moj ID v sobi (enak, kot ga vidijo drugi)
+    this.selfId = null
+    this.room.getSelf().then((s) => (this.selfId = s.userId)).catch(() => {})
+
     this.room.onError((err) => console.warn('Napaka v sobi:', err))
   }
 
@@ -64,6 +72,27 @@ export class Net {
     const value = { round, level: levelCode, name: levelName, by, at: Date.now() }
     this.race.set(value)
     this.events.onRace(value) // tudi sami začnemo (glavna zanka podvojitve ignorira)
+  }
+
+  // Začni lovljenje: lovec je naključni igralec
+  startTag(levelCode, levelName, by, players, seconds = 90) {
+    const prev = this.tag.get()
+    const now = Date.now()
+    const value = {
+      round: (prev ? prev.round : 0) + 1, level: levelCode, name: levelName, by,
+      it: players[Math.floor(Math.random() * players.length)], since: now + 3000, at: now, end: now + 3000 + seconds * 1000,
+    }
+    this.tag.set(value)
+    this.events.onTag(value)
+  }
+
+  // Nekoga smo ujeli (ali lovec je odšel): zdaj lovi on
+  setIt(userId) {
+    const prev = this.tag.get()
+    if (!prev) return
+    const value = { ...prev, it: userId, since: Date.now() }
+    this.tag.set(value)
+    this.events.onTag(value)
   }
 
   leave() {

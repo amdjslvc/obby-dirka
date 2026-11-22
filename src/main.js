@@ -39,7 +39,7 @@ const levelView = new LevelView(scene)
 const editor = new Editor(scene, camera, input, levelView)
 
 let level = sampleLevel(t('sampleName'))
-let mode = 'menu' // 'menu' | 'play' | 'edit' | 'race'
+let mode = 'menu' // 'menu' | 'play' | 'edit' | 'race' | 'tag'
 let lastMode = null // kam se vrnemo z "Nadaljuj"
 const player = new Player(level)
 let me = null // moj avatar
@@ -136,6 +136,21 @@ const remotes = new Map() // userId -> { avatar, profile, target, yaw, speed, gr
 let race = { round: 0, name: '' }
 const results = new Map() // userId -> { name, time }
 
+// lovljenje
+const TAG_DIST = 1.1 // kako blizu mora priti lovec
+const TAG_SAFE = 2 // sekunde, ko novega lovca ne moreš takoj ujeti nazaj
+let tag = null // { round, it, since, end, ... } – skupno stanje sobe
+let tagRound = 0
+const itTime = new Map() // userId -> sekunde kot lovec
+let tagOver = false
+// rdeč kristal nad glavo lovca
+const itMarker = new THREE.Mesh(
+  new THREE.OctahedronGeometry(0.28),
+  new THREE.MeshStandardMaterial({ color: 0xff2d2d, emissive: 0xff0000, emissiveIntensity: 0.8 })
+)
+itMarker.position.y = 3.3
+itMarker.visible = false
+
 // ============================================================
 //  PROGA
 // ============================================================
@@ -166,11 +181,15 @@ function ensureMe() {
   me = new Avatar(scene, { name: profile.name || t('me'), color: profile.color, hat: profile.hat })
 }
 
-function startPlay(raceMode = false) {
+// kind: 'play' (sam), 'race' (dirka v sobi), 'tag' (lovljenje v sobi)
+function startPlay(kind = 'play') {
   if (!level.find(9)) return toast(t('noStart'))
-  if (!level.find(11)) return toast(t('noFinish'))
+  if (kind !== 'tag' && !level.find(11)) return toast(t('noFinish'))
   editor.stop()
-  mode = raceMode ? 'race' : 'play'
+  mode = kind
+  const raceMode = kind !== 'play' // dirka in lovljenje se začneta z odštevanjem
+  PHYSICS.walkSpeed = 7
+  if (kind !== 'tag') { itMarker.visible = false; $('tagHud').hidden = true }
   ensureMe()
   player.reset()
   cam.yaw = Math.PI
@@ -194,7 +213,7 @@ function startPlay(raceMode = false) {
 
 function updateCoinHud() {
   const total = levelView.coins.length
-  $('coinHud').hidden = total === 0 || mode === 'edit'
+  $('coinHud').hidden = total === 0 || mode === 'edit' || mode === 'tag'
   $('coinHud').textContent = `🪙 ${runCoins.size}/${total}`
 }
 
@@ -219,7 +238,7 @@ function bankCoins(place) {
 }
 
 function startEdit() {
-  if (mode === 'race') return toast(t('noEditRace'))
+  if (mode === 'race' || mode === 'tag') return toast(t('noEditRace'))
   mode = 'edit'
   stopGhost()
   if (me) me.setVisible(false)
@@ -240,7 +259,7 @@ function enterGame() {
   $('menu').hidden = true
   $('hud').hidden = false
   $('hud').classList.toggle('edit', mode === 'edit')
-  $('hud').classList.toggle('race', mode === 'race')
+  $('hud').classList.toggle('race', mode === 'race' || mode === 'tag')
   $('hotbar').hidden = mode !== 'edit'
   $('timer').hidden = mode === 'edit'
   updateHelp()
@@ -274,7 +293,7 @@ canvas.addEventListener('click', () => {
 
 input.onKey((e) => {
   if (!input.locked) return
-  if (mode === 'play' || mode === 'race') {
+  if (mode === 'play' || mode === 'race' || mode === 'tag') {
     if (e.code === 'Space') player.pressJump()
     if (e.code === 'KeyR') restart()
     const n = ['Digit1', 'Digit2', 'Digit3', 'Digit4'].indexOf(e.code)
@@ -288,7 +307,7 @@ input.onKey((e) => {
 
 function restart() {
   if (mode === 'play') startPlay()
-  if (mode === 'race' && !finished) { player.respawn(); sfx('death') }
+  if ((mode === 'race' || mode === 'tag') && !finished) { player.respawn(); sfx('death') }
 }
 
 function emote(n) {
@@ -312,7 +331,7 @@ setupTouch(input, {
 document.body.classList.toggle('touch', input.touch)
 
 // Za razhroščevanje v konzoli brskalnika (samo med razvojem): obby.player.pos
-if (import.meta.env.DEV) window.obby = { player, cam, gfx, get mode() { return mode }, get ghost() { return ghost } }
+if (import.meta.env.DEV) window.obby = { player, cam, gfx, get mode() { return mode }, get ghost() { return ghost }, get tag() { return tag }, get net() { return net }, get itTime() { return itTime }, get running() { return running }, get remotes() { return remotes } }
 
 // ============================================================
 //  GLAVNA ZANKA – teče ~60x na sekundo
@@ -327,17 +346,19 @@ function frame() {
   lastTime = now
   time += dt
   levelView.animate(time)
-  levelView.animateFade(time, mode === 'play' || mode === 'race' ? player.fade : new Map())
+  const playing = mode === 'play' || mode === 'race' || mode === 'tag'
+  levelView.animateFade(time, playing ? player.fade : new Map())
 
   // premične platforme: v igri se premikajo, v urejevalniku mirujejo
-  levelView.updateMovers(mode === 'play' || mode === 'race' ? worldTime() : null)
+  levelView.updateMovers(playing ? worldTime() : null)
   player.movers = levelView.movers
 
   if (mode === 'edit') {
     editor.update(dt)
     followSun(editor.pos)
-  } else if (mode === 'play' || mode === 'race') {
+  } else if (playing) {
     updatePlayer(dt)
+    if (mode === 'tag') updateTag(dt)
   } else {
     menuOrbit(dt)
   }
@@ -353,7 +374,7 @@ function frame() {
 // Če se igra zatika (manj kot ~40 slik na sekundo), poenostavimo grafiko
 let slowTime = 0, slowFrames = 0, warmup = 0
 function checkSpeed(ms) {
-  if (mode !== 'play' && mode !== 'race') return
+  if (mode !== 'play' && mode !== 'race' && mode !== 'tag') return
   if (document.hidden || ms > 500) return // zavihek v ozadju ne šteje
   if ((warmup -= ms) > 0) return // prvi dve sekundi se igra šele "ogreva"
   slowTime += ms
@@ -431,7 +452,7 @@ function updatePlayer(dt) {
       ghostRec.push(+p.x.toFixed(2), +p.y.toFixed(2), +p.z.toFixed(2), +player.yaw.toFixed(2))
   }
   updateGhost(dt)
-  $('timer').textContent = formatTime(runTime)
+  $('timer').textContent = mode === 'tag' && tag ? formatTime(Math.max(0, (tag.end - Date.now()) / 1000)) : formatTime(runTime)
   me.update(dt, player.pos, player.yaw, player.horizontalSpeed, player.onGround)
 
   // --- senca pristanka (samo v zraku) ---
@@ -498,7 +519,7 @@ function handleEvent(ev) {
   if (ev === 'bounce') { sfx('bounce'); particles.burst(feet, FX.bounce) }
   if (ev === 'boost') { sfx('boost'); toast(t('boost')) }
   if (ev === 'checkpoint') { sfx('checkpoint'); toast(t('checkpoint')); particles.burst(feet, FX.checkpoint) }
-  if (ev === 'finish' && !finished && running) {
+  if (ev === 'finish' && !finished && running && mode !== 'tag') {
     finished = true
     sfx('finish')
     // ognjemet!
@@ -580,6 +601,11 @@ const netEvents = {
     r.avatar.dispose()
     remotes.delete(userId)
     renderPlayers()
+    // lovec je odšel: novega izbere igralec z "najmanjšim" ID-jem (da ga ne izbereta dva hkrati)
+    if (mode === 'tag' && tag && !tagOver && tag.it === userId) {
+      const ids = [myId(), ...remotes.keys()].sort()
+      if (ids[0] === myId()) net?.setIt(ids[Math.floor(Math.random() * ids.length)])
+    }
   },
   onPos(userId, d) {
     if (!Array.isArray(d) || d.length < 6) return
@@ -604,12 +630,13 @@ const netEvents = {
     try {
       const l = await Level.fromCode(value.level)
       setLevel(l)
-      startPlay(true)
+      startPlay('race')
       toast(t('raceStart', { name: l.name, by: value.by }), 2500)
     } catch (e) {
       toast(t('raceFail'))
     }
   },
+  onTag,
   onFinish(userId, d) {
     if (!d || d.round !== race.round || !Number.isFinite(d.time)) return
     const r = remotes.get(userId)
@@ -618,17 +645,122 @@ const netEvents = {
   },
 }
 
+// ============================================================
+//  LOVLJENJE
+// ============================================================
+const myId = () => net?.selfId || 'me'
+const nameOf = (id) => (id === myId() ? profile.name || t('me') : remotes.get(id)?.profile.name || t('player'))
+
+async function startTagGame() {
+  if (!remotes.size) return toastMenu(t('needFriends'))
+  if (!level.find(9)) return toastMenu(t('noStart'))
+  net.startTag(await level.toCode(), level.name, profile.name || t('someone'), [myId(), ...remotes.keys()])
+}
+
+async function onTag(value) {
+  if (!value || !Number.isFinite(value.end)) return
+  if (value.round > tagRound) {
+    // nova igra lovljenja
+    if (Date.now() > value.end) { tagRound = value.round; return } // stara igra, ko smo prišli v sobo
+    tagRound = value.round
+    try {
+      const l = await Level.fromCode(value.level)
+      setLevel(l)
+    } catch { return toast(t('raceFail')) }
+    tag = value
+    itTime.clear()
+    tagOver = false
+    startPlay('tag')
+    toast(t('tagStart', { name: level.name, by: value.by }), 2500)
+    showIt(null)
+    return
+  }
+  if (value.round !== tagRound || !tag || value.it === tag.it) return
+  const old = tag.it
+  tag = value
+  if (mode === 'tag') showIt(old)
+}
+
+// Kdo lovi – sporočilo na zaslonu
+function showIt(oldIt) {
+  if (!tag) return
+  const mine = myId()
+  if (tag.it === mine) {
+    if (oldIt) { toast(t('tagged', { name: nameOf(oldIt) }), 2000); sfx('death'); shake = 0.25 }
+    else toast(t('tagIt'), 2500)
+  } else if (oldIt === mine) {
+    toast(t('youTagged', { name: nameOf(tag.it) }), 2000)
+    sfx('checkpoint')
+  }
+  updateTagHud()
+}
+
+function updateTagHud() {
+  const el = $('tagHud')
+  el.hidden = mode !== 'tag' || !tag || tagOver
+  if (el.hidden) return
+  el.classList.toggle('me', tag.it === myId())
+  el.textContent = tag.it === myId() ? t('tagYou') : t('tagOther', { name: nameOf(tag.it) })
+}
+
+function updateTag(dt) {
+  if (!tag || tagOver) return
+  // rdeč kristal nad lovcem
+  const holder = tag.it === myId() ? me?.group : remotes.get(tag.it)?.avatar.group
+  if (holder && itMarker.parent !== holder) holder.add(itMarker)
+  itMarker.visible = !!holder
+  itMarker.rotation.y += dt * 3
+  itMarker.position.y = 3.3 + Math.sin(time * 4) * 0.1
+  // lovec je malo hitrejši
+  PHYSICS.walkSpeed = tag.it === myId() ? 7.7 : 7
+  if (!running) return
+  // štejemo, koliko časa je kdo lovec
+  if (Date.now() >= tag.since) itTime.set(tag.it, (itTime.get(tag.it) || 0) + dt)
+  // konec igre
+  if (Date.now() >= tag.end) return endTag()
+  // če sem lovec, preverim, ali sem koga ujel
+  if (tag.it !== myId() || Date.now() - tag.since < TAG_SAFE * 1000) return
+  for (const [id, r] of remotes) {
+    if (!r.target || performance.now() - r.seen > 1000) continue
+    const dx = r.target.x - player.pos.x, dz = r.target.z - player.pos.z, dy = r.target.y - player.pos.y
+    if (Math.hypot(dx, dz) < TAG_DIST && Math.abs(dy) < 1.6) {
+      net.setIt(id)
+      break
+    }
+  }
+}
+
+function endTag() {
+  tagOver = true
+  running = false
+  PHYSICS.walkSpeed = 7
+  itMarker.visible = false
+  updateTagHud()
+  // zmaga, kdor je bil najmanj časa lovec
+  const ids = [myId(), ...remotes.keys()]
+  const list = ids.map((id) => ({ id, name: nameOf(id), time: itTime.get(id) || 0 })).sort((a, b) => a.time - b.time)
+  results.clear()
+  for (const r of list) results.set(r.id, { name: r.name, time: r.time })
+  renderResults(t('tagResults'))
+  const place = list.findIndex((r) => r.id === myId()) + 1
+  const earned = remotes.size ? [10, 6, 4][place - 1] || 2 : 0
+  if (earned) { coins.wallet += earned; sfx('buy') }
+  sfx('finish')
+  for (let i = 0; i < 4; i++) setTimeout(() => particles.burst(player.pos.clone().add(new THREE.Vector3(0, 6, 0)), FX.firework), i * 300)
+  toast(t('tagEnd', { name: list[0].name }) + (earned ? '\n' + t('earned', { n: earned, total: coins.wallet }) : ''), 5000)
+}
+
 function addResult(id, name, time, easy = false) {
   if (!results.has(id)) results.set(id, { name, time, easy })
   renderResults()
 }
 
-function renderResults() {
+function renderResults(title = t('results')) {
   const box = $('results')
-  box.hidden = mode !== 'race' || results.size === 0
+  box.hidden = (mode !== 'race' && mode !== 'tag') || results.size === 0
   const list = [...results.values()].sort((a, b) => a.time - b.time)
   const medals = ['🥇', '🥈', '🥉']
-  box.innerHTML = `<h3>${t('results')}</h3><ol>` +
+  box.innerHTML = `<h3>${title}</h3><ol>` +
     list.map((r, i) => `<li>${medals[i] || ''} ${escapeHtml(r.name)}${r.easy ? ' 🐣' : ''} – ${formatTime(r.time)}</li>`).join('') + '</ol>'
 }
 
@@ -755,6 +887,7 @@ function initMenu() {
   }
   $('roomInput').addEventListener('keydown', (e) => e.key === 'Enter' && $('joinRoomBtn').click())
   $('leaveRoomBtn').onclick = leaveRoom
+  $('tagBtn').onclick = startTagGame
   $('raceBtn').onclick = async () => {
     if (!level.find(9) || !level.find(11)) return toastMenu(t('needStartFinish'))
     net.startRace(await level.toCode(), level.name, profile.name || t('someone'))
@@ -874,7 +1007,11 @@ function leaveRoom() {
   $('roomOut').hidden = false
   $('roomIn').hidden = true
   history.replaceState(null, '', location.pathname)
-  if (mode === 'race') mode = 'play'
+  if (mode === 'race' || mode === 'tag') mode = 'play'
+  tag = null
+  itMarker.visible = false
+  PHYSICS.walkSpeed = 7
+  $('tagHud').hidden = true
 }
 
 function renderPlayers() {

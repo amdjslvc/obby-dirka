@@ -77,6 +77,10 @@ Premične kocke se vedno premikajo v pozitivni smeri od mesta, kamor jih postavi
 Sosednje kocke iste vrste se premikajo skupaj, zato lahko zgradiš večjo platformo.
 V urejevalniku mirujejo, v igri pa se premikajo.
 
+## Lovljenje 🏃
+
+V sobi pritisni **🏃 Lovljenje**. Eden od igralcev postane lovec in nad glavo dobi rdeč kristal. Kogar se lovec dotakne, postane novi lovec, prejšnjega pa 2 sekundi ne more ujeti nazaj. Lovec je malo hitrejši. Igra traja 90 sekund, zmaga pa tisti, ki je bil najmanj časa lovec. Prvi trije dobijo kovance.
+
 ## Kovanci in klobuki
 
 - Kovance pobereš na progi, v denarnico pa gredo šele, **ko prideš na cilj**.
@@ -120,7 +124,7 @@ JavaScript je podoben Pythonu: `function` je `def`, `{ }` zamenja zamik,
 3. Dodaj novo kocko, npr. **lepljivo** (počasna hoja) ali **teleport**.
 4. Premične platforme z nastavljivo dolžino poti in hitrostjo (zdaj sta v `movers.js` za vse enaki).
 5. Še več stvari za kovance: barve, sledi za likom, plesi.
-6. Nov način v sobi, npr. lovljenje ali kralj hriba.
+6. Nov način v sobi, npr. kralj hriba (poglej, kako je narejeno lovljenje v `main.js`).
 
 Če spremeniš kaj, kar morajo imeti vsi v sobi (npr. novo kocko), povečaj `GAME_VERSION` v `src/net.js`. Tako igra prijatelje s staro različico opozori, naj osvežijo stran.
 

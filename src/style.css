@@ -77,6 +77,12 @@ summary { cursor: pointer; }
 }
 #results h3 { margin: 0 0 6px; font-size: 1rem; color: #ffd23f; }
 #results ol { margin: 0; padding-left: 22px; }
+#tagHud {
+  position: absolute; top: 104px; left: 50%; transform: translateX(-50%); padding: 6px 16px; border-radius: 12px;
+  background: rgba(0, 0, 0, 0.45); font-weight: 800; font-size: 1.1rem; white-space: nowrap;
+}
+#tagHud.me { background: rgba(255, 45, 45, 0.85); animation: pulse 0.8s ease-in-out infinite alternate; }
+@keyframes pulse { to { transform: translateX(-50%) scale(1.08); } }
 #help { position: absolute; top: 44px; left: 18px; font-size: 0.85rem; opacity: 0.8; text-shadow: 0 1px 2px #000; }
 #hotbar {
   position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
