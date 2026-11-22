@@ -54,6 +54,19 @@ Na telefonu ti igra malo pomaga:
 | Ctrl+Z | razveljavi |
 | E | preizkusi progo |
 
+## Vgrajene proge
+
+Gumb **🗺 Vzorčna** pokaže 4 proge:
+
+| Proga | Opis |
+|---|---|
+| 🌱 Prva proga | vse osnovne kocke |
+| 🟣 Vijolični svet | izginjajoče kocke in portal |
+| 🗼 Stolp v oblakih | vzpon s trampolinom, dvigalom in steklenimi stopnicami |
+| 🏟 Arena za lovljenje | velik prostor za lovljenje s prijatelji |
+
+Proge so napisane s kodo v `src/level.js`. Poglej si `towerLevel` in naredi svojo!
+
 ## Posebne kocke
 
 | Kocka | Kaj naredi |

@@ -75,7 +75,12 @@ export class Player {
     const m = this.groundMover
     if (m && (m.dx || m.dy || m.dz)) {
       const v = this.vel.clone()
-      this.moveAxis('y', m.dy)
+      // gor/dol: prilepimo se na vrh platforme (razen če bi nas stisnilo ob kocko)
+      if (m.dy) {
+        const y = this.pos.y
+        this.pos.y = m.y + 0.5 + EPS
+        if (this.overlapping(0).some((h) => !h[4])) this.pos.y = y
+      }
       this.moveAxis('x', m.dx)
       this.moveAxis('z', m.dz)
       this.vel.copy(v) // vožnja ne spremeni naše lastne hitrosti
@@ -84,7 +89,7 @@ export class Player {
       const o = b[4]
       if (!o) continue
       // potisni nas iz platforme v smeri, v katero se premika
-      if (o.dy > 0) { this.pos.y = o.y + 0.5 + EPS; this.vel.y = Math.max(this.vel.y, 0); this.groundMover = o }
+      if (o.dy > 0 || (o.dy < 0 && this.pos.y > o.y)) { this.pos.y = o.y + 0.5 + EPS; this.vel.y = Math.max(this.vel.y, 0); this.groundMover = o }
       else if (o.dy < 0) this.pos.y = o.y - 0.5 - HEIGHT - EPS
       else if (o.dx) this.pos.x = o.x + Math.sign(o.dx) * (0.5 + HALF_W + EPS)
       else if (o.dz) this.pos.z = o.z + Math.sign(o.dz) * (0.5 + HALF_W + EPS)

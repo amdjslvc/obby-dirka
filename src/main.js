@@ -2,7 +2,7 @@
 //  GLAVNI PROGRAM: poveže vse skupaj – meni, igro, urejevalnik in sobe.
 // ============================================================
 import * as THREE from 'three'
-import { Level, BLOCKS, HOTBAR, sampleLevel } from './level.js'
+import { Level, BLOCKS, HOTBAR, sampleLevel, SAMPLES } from './level.js'
 import { createScene, LevelView, Avatar, SKINS, HATS, HAT_INFO } from './world.js'
 import { Player, PHYSICS } from './player.js'
 import { Input } from './input.js'
@@ -878,10 +878,24 @@ function initMenu() {
     lastMode = null
     startEdit()
   }
+  // vgrajene proge: klik pokaže seznam
   $('sampleBtn').onclick = () => {
-    setLevel(sampleLevel(t('sampleName')))
-    lastMode = null
-    $('resumeBtn').hidden = true
+    const box = $('sampleList')
+    box.hidden = !box.hidden
+    box.innerHTML = ''
+    SAMPLES.forEach((make, i) => {
+      const name = t(['sampleName', 'sample2', 'sample3', 'sample4'][i])
+      const b = document.createElement('button')
+      b.textContent = ['🌱', '🟣', '🗼', '🏟'][i] + ' ' + name
+      b.onclick = () => {
+        setLevel(make(name))
+        lastMode = null
+        $('resumeBtn').hidden = true
+        box.hidden = true
+        toastMenu(t('loadedName', { name }))
+      }
+      box.append(b)
+    })
   }
   renderSaved()
 

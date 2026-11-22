@@ -13,6 +13,7 @@ const RTL = ['ar'] // jeziki, ki se berejo od desne proti levi
 
 const D = {
   sl: {
+    sample2: "Vijolični svet", sample3: "Stolp v oblakih", sample4: "Arena za lovljenje",
     startTag: "🏃 Lovljenje", needFriends: "Za lovljenje rabiš vsaj enega prijatelja v sobi 🙂", tagStart: "🏃 Lovljenje na progi {name}\n(začel {by})", tagIt: "🔴 Ti loviš! Dotakni se nekoga!", tagYou: "🔴 TI LOVIŠ!", tagOther: "🔴 Lovi: {name} – beži!", tagged: "😱 {name} te je ujel – zdaj loviš ti!", youTagged: "🎯 Ujel si {name}!", tagEnd: "🏆 Konec! Zmagal je {name}", tagResults: "Čas kot lovec",
     selfOld: 'Tvoja različica igre je stara – osveži stran 🔄',
     easy: "🐣 Lahki način – po padcu se vrneš tja, kjer si stal", ghost: "👻 Tvoj rekord", oldVersion: "{name} ima staro različico igre – naj osveži stran 🔄", lowGfx: "Grafika poenostavljena, da igra teče gladko 🐢→🐇",
@@ -46,6 +47,7 @@ const D = {
     h: ['Brez', 'Kapa', 'Mačja ušesa', 'Rogovi', 'Cilinder', 'Čarovnik', 'Propeler', 'Svetniški sij', 'Krona'],
   },
   en: {
+    sample2: "Purple World", sample3: "Sky Tower", sample4: "Tag Arena",
     startTag: "🏃 Tag", needFriends: "You need at least one friend in the room to play tag 🙂", tagStart: "🏃 Tag on {name}\n(started by {by})", tagIt: "🔴 You're it! Touch someone!", tagYou: "🔴 YOU'RE IT!", tagOther: "🔴 {name} is it – run!", tagged: "😱 {name} tagged you – now you're it!", youTagged: "🎯 You tagged {name}!", tagEnd: "🏆 Game over! {name} wins", tagResults: "Time as tagger",
     selfOld: 'Your version of the game is old – refresh the page 🔄',
     easy: "🐣 Easy mode – after a fall you return to where you stood", ghost: "👻 Your record", oldVersion: "{name} has an old version of the game – ask them to refresh the page 🔄", lowGfx: "Graphics simplified so the game runs smoothly 🐢→🐇",
@@ -79,6 +81,7 @@ const D = {
     h: ['None', 'Cap', 'Cat ears', 'Horns', 'Top hat', 'Wizard', 'Propeller', 'Halo', 'Crown'],
   },
   de: {
+    sample2: "Lila Welt", sample3: "Wolkenturm", sample4: "Fangen-Arena",
     startTag: "🏃 Fangen", needFriends: "Zum Fangen brauchst du mindestens einen Freund im Raum 🙂", tagStart: "🏃 Fangen auf {name}\n(gestartet von {by})", tagIt: "🔴 Du bist dran! Berühre jemanden!", tagYou: "🔴 DU BIST DRAN!", tagOther: "🔴 {name} fängt – lauf!", tagged: "😱 {name} hat dich gefangen – jetzt fängst du!", youTagged: "🎯 Du hast {name} gefangen!", tagEnd: "🏆 Ende! {name} gewinnt", tagResults: "Zeit als Fänger",
     selfOld: 'Deine Spielversion ist alt – lade die Seite neu 🔄',
     easy: "🐣 Leichter Modus – nach einem Sturz kehrst du dorthin zurück, wo du standest", ghost: "👻 Dein Rekord", oldVersion: "{name} hat eine alte Spielversion – bitte Seite neu laden 🔄", lowGfx: "Grafik vereinfacht, damit das Spiel flüssig läuft 🐢→🐇",
@@ -112,6 +115,7 @@ const D = {
     h: ['Keiner', 'Kappe', 'Katzenohren', 'Hörner', 'Zylinder', 'Zauberer', 'Propeller', 'Heiligenschein', 'Krone'],
   },
   fr: {
+    sample2: "Monde violet", sample3: "Tour des nuages", sample4: "Arène du chat",
     startTag: "🏃 Chat", needFriends: "Il faut au moins un ami dans la salle pour jouer au chat 🙂", tagStart: "🏃 Chat sur {name}\n(lancé par {by})", tagIt: "🔴 C'est toi le chat ! Touche quelqu'un !", tagYou: "🔴 C'EST TOI LE CHAT !", tagOther: "🔴 {name} est le chat – cours !", tagged: "😱 {name} t'a touché – c'est toi le chat !", youTagged: "🎯 Tu as touché {name} !", tagEnd: "🏆 Fini ! {name} gagne", tagResults: "Temps comme chat",
     selfOld: 'Ta version du jeu est ancienne – recharge la page 🔄',
     easy: "🐣 Mode facile – après une chute, tu reviens là où tu étais", ghost: "👻 Ton record", oldVersion: "{name} a une ancienne version du jeu – qu'il recharge la page 🔄", lowGfx: "Graphismes simplifiés pour que le jeu reste fluide 🐢→🐇",
@@ -145,6 +149,7 @@ const D = {
     h: ['Aucun', 'Casquette', 'Oreilles de chat', 'Cornes', 'Haut-de-forme', 'Sorcier', 'Hélice', 'Auréole', 'Couronne'],
   },
   es: {
+    sample2: "Mundo morado", sample3: "Torre en las nubes", sample4: "Arena de pilla-pilla",
     startTag: "🏃 Pilla-pilla", needFriends: "Necesitas al menos un amigo en la sala para jugar 🙂", tagStart: "🏃 Pilla-pilla en {name}\n(empezado por {by})", tagIt: "🔴 ¡Te toca! ¡Toca a alguien!", tagYou: "🔴 ¡TE TOCA!", tagOther: "🔴 Pilla {name} – ¡corre!", tagged: "😱 {name} te pilló – ¡ahora pillas tú!", youTagged: "🎯 ¡Pillaste a {name}!", tagEnd: "🏆 ¡Fin! Gana {name}", tagResults: "Tiempo pillando",
     selfOld: 'Tu versión del juego es antigua – recarga la página 🔄',
     easy: "🐣 Modo fácil – tras una caída vuelves a donde estabas", ghost: "👻 Tu récord", oldVersion: "{name} tiene una versión antigua del juego – que recargue la página 🔄", lowGfx: "Gráficos simplificados para que el juego vaya fluido 🐢→🐇",
@@ -178,6 +183,7 @@ const D = {
     h: ['Ninguno', 'Gorra', 'Orejas de gato', 'Cuernos', 'Chistera', 'Mago', 'Hélice', 'Aureola', 'Corona'],
   },
   it: {
+    sample2: "Mondo viola", sample3: "Torre tra le nuvole", sample4: "Arena acchiapparella",
     startTag: "🏃 Acchiapparella", needFriends: "Serve almeno un amico nella stanza per giocare 🙂", tagStart: "🏃 Acchiapparella su {name}\n(avviata da {by})", tagIt: "🔴 Tocca a te! Tocca qualcuno!", tagYou: "🔴 TOCCA A TE!", tagOther: "🔴 Acchiappa {name} – scappa!", tagged: "😱 {name} ti ha preso – ora acchiappi tu!", youTagged: "🎯 Hai preso {name}!", tagEnd: "🏆 Fine! Vince {name}", tagResults: "Tempo da cacciatore",
     selfOld: 'La tua versione del gioco è vecchia – ricarica la pagina 🔄',
     easy: "🐣 Modalità facile – dopo una caduta torni dove eri", ghost: "👻 Il tuo record", oldVersion: "{name} ha una versione vecchia del gioco – ricarichi la pagina 🔄", lowGfx: "Grafica semplificata per un gioco fluido 🐢→🐇",
@@ -211,6 +217,7 @@ const D = {
     h: ['Nessuno', 'Berretto', 'Orecchie da gatto', 'Corna', 'Cilindro', 'Mago', 'Elica', 'Aureola', 'Corona'],
   },
   pt: {
+    sample2: "Mundo roxo", sample3: "Torre nas nuvens", sample4: "Arena da apanhada",
     startTag: "🏃 Apanhada", needFriends: "Precisas de pelo menos um amigo na sala para jogar 🙂", tagStart: "🏃 Apanhada em {name}\n(iniciado por {by})", tagIt: "🔴 És tu! Toca em alguém!", tagYou: "🔴 ÉS TU!", tagOther: "🔴 {name} apanha – foge!", tagged: "😱 {name} apanhou-te – agora és tu!", youTagged: "🎯 Apanhaste {name}!", tagEnd: "🏆 Fim! {name} ganha", tagResults: "Tempo a apanhar",
     selfOld: 'A tua versão do jogo é antiga – recarrega a página 🔄',
     easy: "🐣 Modo fácil – depois de cair voltas para onde estavas", ghost: "👻 O teu recorde", oldVersion: "{name} tem uma versão antiga do jogo – peça para recarregar a página 🔄", lowGfx: "Gráficos simplificados para o jogo correr suave 🐢→🐇",
@@ -244,6 +251,7 @@ const D = {
     h: ['Nenhum', 'Boné', 'Orelhas de gato', 'Chifres', 'Cartola', 'Mago', 'Hélice', 'Auréola', 'Coroa'],
   },
   ru: {
+    sample2: "Фиолетовый мир", sample3: "Башня в облаках", sample4: "Арена для догонялок",
     startTag: "🏃 Догонялки", needFriends: "Для догонялок нужен хотя бы один друг в комнате 🙂", tagStart: "🏃 Догонялки на трассе {name}\n(начал {by})", tagIt: "🔴 Ты водишь! Коснись кого-нибудь!", tagYou: "🔴 ТЫ ВОДИШЬ!", tagOther: "🔴 Водит {name} – беги!", tagged: "😱 {name} поймал тебя – теперь водишь ты!", youTagged: "🎯 Ты поймал {name}!", tagEnd: "🏆 Конец! Победил {name}", tagResults: "Время водящим",
     selfOld: 'У тебя старая версия игры – обнови страницу 🔄',
     easy: "🐣 Лёгкий режим – после падения возвращаешься туда, где стоял", ghost: "👻 Твой рекорд", oldVersion: "У {name} старая версия игры – пусть обновит страницу 🔄", lowGfx: "Графика упрощена, чтобы игра шла плавно 🐢→🐇",
@@ -277,6 +285,7 @@ const D = {
     h: ['Без шапки', 'Кепка', 'Кошачьи ушки', 'Рога', 'Цилиндр', 'Волшебник', 'Пропеллер', 'Нимб', 'Корона'],
   },
   zh: {
+    sample2: "紫色世界", sample3: "云中塔", sample4: "抓人竞技场",
     startTag: "🏃 抓人", needFriends: "房间里至少要有一个朋友才能玩抓人 🙂", tagStart: "🏃 在 {name} 上抓人\n（{by} 发起）", tagIt: "🔴 你来抓！碰到别人！", tagYou: "🔴 你来抓！", tagOther: "🔴 {name} 在抓人 – 快跑！", tagged: "😱 {name} 抓到你了 – 现在你来抓！", youTagged: "🎯 你抓到了 {name}！", tagEnd: "🏆 结束！{name} 获胜", tagResults: "当抓人者的时间",
     selfOld: '你的游戏版本太旧 – 请刷新页面 🔄',
     easy: "🐣 简单模式 – 掉下去后回到你刚才站的地方", ghost: "👻 你的纪录", oldVersion: "{name} 的游戏版本太旧 – 请刷新页面 🔄", lowGfx: "已简化画面，让游戏更流畅 🐢→🐇",
@@ -310,6 +319,7 @@ const D = {
     h: ['无', '鸭舌帽', '猫耳朵', '恶魔角', '礼帽', '巫师帽', '螺旋桨帽', '光环', '皇冠'],
   },
   ja: {
+    sample2: "むらさきの世界", sample3: "雲の上の塔", sample4: "鬼ごっこアリーナ",
     startTag: "🏃 鬼ごっこ", needFriends: "鬼ごっこには部屋に友だちが1人以上必要です 🙂", tagStart: "🏃 {name} で鬼ごっこ\n（{by} が開始）", tagIt: "🔴 きみが鬼！だれかにタッチ！", tagYou: "🔴 きみが鬼！", tagOther: "🔴 鬼は {name} – 逃げろ！", tagged: "😱 {name} にタッチされた – 今度はきみが鬼！", youTagged: "🎯 {name} をつかまえた！", tagEnd: "🏆 終了！{name} の勝ち", tagResults: "鬼だった時間",
     selfOld: 'ゲームのバージョンが古いです – ページを再読み込みしてね 🔄',
     easy: "🐣 かんたんモード – 落ちても立っていた場所に戻る", ghost: "👻 自己ベスト", oldVersion: "{name} は古いバージョンです – ページを再読み込みしてね 🔄", lowGfx: "なめらかに動くようにグラフィックを軽くしました 🐢→🐇",
@@ -343,6 +353,7 @@ const D = {
     h: ['なし', 'キャップ', 'ネコ耳', 'ツノ', 'シルクハット', '魔法使い', 'プロペラ', '天使の輪', '王冠'],
   },
   hi: {
+    sample2: "बैंगनी दुनिया", sample3: "बादलों की मीनार", sample4: "पकड़म-पकड़ाई अखाड़ा",
     startTag: "🏃 पकड़म-पकड़ाई", needFriends: "खेलने के लिए कमरे में कम से कम एक दोस्त चाहिए 🙂", tagStart: "🏃 {name} पर पकड़म-पकड़ाई\n({by} ने शुरू किया)", tagIt: "🔴 तुम्हारी बारी! किसी को छुओ!", tagYou: "🔴 तुम्हारी बारी!", tagOther: "🔴 {name} पकड़ रहा है – भागो!", tagged: "😱 {name} ने तुम्हें पकड़ा – अब तुम्हारी बारी!", youTagged: "🎯 तुमने {name} को पकड़ा!", tagEnd: "🏆 खेल ख़त्म! {name} जीता", tagResults: "पकड़ने वाले का समय",
     selfOld: 'तुम्हारा खेल संस्करण पुराना है – पेज रीफ़्रेश करो 🔄',
     easy: "🐣 आसान मोड – गिरने के बाद तुम वहीं लौटते हो जहाँ खड़े थे", ghost: "👻 तुम्हारा रिकॉर्ड", oldVersion: "{name} के पास खेल का पुराना संस्करण है – पेज रीफ़्रेश करें 🔄", lowGfx: "खेल सहज चले, इसलिए ग्राफ़िक्स सरल किए गए 🐢→🐇",
@@ -376,6 +387,7 @@ const D = {
     h: ['कुछ नहीं', 'टोपी', 'बिल्ली के कान', 'सींग', 'हैट', 'जादूगर', 'प्रोपेलर', 'प्रभामंडल', 'मुकुट'],
   },
   ar: {
+    sample2: "العالم البنفسجي", sample3: "برج السحاب", sample4: "ساحة المطاردة",
     startTag: "🏃 لعبة المطاردة", needFriends: "تحتاج إلى صديق واحد على الأقل في الغرفة 🙂", tagStart: "🏃 مطاردة على {name}\n(بدأها {by})", tagIt: "🔴 أنت المطارِد! المس أحدًا!", tagYou: "🔴 أنت المطارِد!", tagOther: "🔴 {name} يطارد – اهرب!", tagged: "😱 أمسك بك {name} – الآن أنت المطارِد!", youTagged: "🎯 أمسكت {name}!", tagEnd: "🏆 انتهت! فاز {name}", tagResults: "الوقت كمطارِد",
     selfOld: 'نسختك من اللعبة قديمة – حدّث الصفحة 🔄',
     easy: "🐣 الوضع السهل – بعد السقوط تعود إلى حيث كنت تقف", ghost: "👻 رقمك القياسي", oldVersion: "لدى {name} نسخة قديمة من اللعبة – اطلب منه تحديث الصفحة 🔄", lowGfx: "تم تبسيط الرسومات لتعمل اللعبة بسلاسة 🐢→🐇",

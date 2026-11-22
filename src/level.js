@@ -206,3 +206,78 @@ export function sampleLevel(name = 'Prva proga') {
   for (const [x, y, w] of coins) if (!L.get(x, y, w)) L.set(x, y, w, 16)
   return L
 }
+
+// ---------- Še nekaj vgrajenih prog ----------
+function builder(name) {
+  const L = new Level(name)
+  const plat = (x0, y, z0, w, d, type) => {
+    for (let x = x0; x < x0 + w; x++) for (let z = z0; z < z0 + d; z++) L.set(x, y, z, type)
+  }
+  const coin = (x, y, z) => !L.get(x, y, z) && L.set(x, y, z, 16)
+  return { L, plat, coin }
+}
+
+// Izginjajoče kocke in portal
+export function purpleLevel(name = 'Vijolični svet') {
+  const { L, plat, coin } = builder(name)
+  plat(-2, 0, -2, 5, 5, 2)
+  L.set(0, 0, 0, 9)
+  for (let z = 3; z <= 10; z++) L.set(0, 0, z, 17) // izginjajoči most – ne ustavljaj se!
+  plat(-2, 0, 11, 5, 4, 1)
+  L.set(0, 0, 13, 10)
+  let z = 16
+  for (let i = 0; i < 5; i++) { // izginjajoče skakalnice navzgor
+    plat(i % 2 ? 0 : -1, i, z, 2, 2, 17)
+    z += 3
+  }
+  plat(-2, 4, 31, 5, 4, 2)
+  L.set(-1, 4, 32, 10)
+  L.set(0, 5, 34, 18) // portal …
+  plat(18, 12, 40, 5, 5, 4)
+  L.set(20, 13, 42, 18) // … te prenese sem gor
+  plat(19, 12, 46, 2, 2, 15) // dvigalo
+  plat(18, 15, 49, 5, 4, 11)
+  for (const c of [[0, 1, 6], [0, 1, 9], [-1, 1, 16], [0, 3, 22], [0, 5, 28], [1, 5, 33], [20, 14, 44], [21, 16, 51]]) coin(...c)
+  return L
+}
+
+// Navzgor: stopnice, trampolin, dvigalo, steklo
+export function towerLevel(name = 'Stolp v oblakih') {
+  const { L, plat, coin } = builder(name)
+  plat(-3, 0, -3, 7, 7, 1)
+  L.set(0, 0, 0, 9)
+  for (let i = 0; i < 6; i++) plat(-1, i + 1, 4 + i * 2, 3, 2, 3) // stopnice
+  plat(-1, 6, 16, 3, 3, 1)
+  L.set(0, 6, 17, 7) // trampolin
+  plat(-2, 10, 20, 5, 4, 2)
+  L.set(0, 10, 21, 10)
+  plat(-1, 10, 25, 2, 2, 15) // dvigalo
+  plat(-2, 13, 28, 5, 4, 1)
+  L.set(0, 13, 30, 10)
+  for (let i = 0; i < 4; i++) L.set(0, 14 + i, 33 + i * 2, 12) // steklene stopnice
+  for (let z = 41; z <= 44; z++) L.set(0, 17, z, 17)
+  plat(-2, 17, 45, 5, 5, 11)
+  for (const c of [[0, 2, 5], [1, 5, 11], [0, 8, 17], [-2, 11, 22], [0, 12, 26], [0, 15, 33], [0, 18, 39], [0, 18, 43]]) coin(...c)
+  return L
+}
+
+// Velik prostor za lovljenje (in malo igranja)
+export function arenaLevel(name = 'Arena za lovljenje') {
+  const { L, plat, coin } = builder(name)
+  plat(-12, 0, -12, 25, 25, 2)
+  plat(-4, 0, 7, 9, 3, 5) // led
+  for (let z = -4; z <= 4; z++) L.set(-10, 0, z, 8) // pospešek
+  L.set(0, 0, -8, 9)
+  for (let y = 1; y <= 2; y++) { plat(-6, y, -3, 1, 6, 4); plat(6, y, -3, 1, 6, 4) } // zidova
+  for (const [x, z] of [[-9, -9], [8, -9], [-9, 8], [8, 8]]) for (let y = 1; y <= 3; y++) plat(x, y, z, 2, 2, 1) // stebri
+  for (const [x, z] of [[-9, -6], [8, -6], [-9, 6], [8, 6]]) L.set(x, 0, z, 7) // trampolini ob stebrih
+  L.set(-11, 1, -11, 18) // portala v kotih
+  L.set(11, 1, 11, 18)
+  for (let y = 1; y <= 4; y++) plat(-1, y, -1, 3, 3, 1) // stolp na sredini …
+  L.set(0, 4, 0, 11) // … s ciljem na vrhu
+  L.set(2, 1, 0, 15) // dvigalo na stolp
+  for (const c of [[-9, 4, -9], [8, 4, -9], [-9, 4, 8], [8, 4, 8], [0, 1, 9], [-10, 1, 0], [-6, 3, 0], [6, 3, 0]]) coin(...c)
+  return L
+}
+
+export const SAMPLES = [sampleLevel, purpleLevel, towerLevel, arenaLevel]

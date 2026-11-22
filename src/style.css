@@ -102,8 +102,8 @@ summary { cursor: pointer; }
 }
 
 /* ---------- Kontrole za telefon ---------- */
-label.check { display: flex; align-items: center; gap: 8px; margin-top: 10px; cursor: pointer; }
-label.check input { width: 20px; height: 20px; accent-color: #ffb800; }
+label.check { display: flex; align-items: center; justify-content: flex-start; gap: 8px; margin-top: 10px; cursor: pointer; }
+label.check input { flex: 0 0 auto; width: 20px; height: 20px; margin: 0; padding: 0; accent-color: #ffb800; }
 #touch { display: none; }
 body.touch #touch { display: block; }
 /* gumbi samo za igro / samo za urejevalnik */
