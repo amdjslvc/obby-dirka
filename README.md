@@ -30,10 +30,18 @@ Za igranje s prijatelji na drugih računalnikih mora biti igra objavljena na int
 |---|---|
 | levi palec | joystick (pojavi se, kjer se dotakneš) |
 | desni palec | vlečenje obrača kamero |
-| ⤒ | skok |
-| ↺ / 😀 / ☰ | znova / emoti / meni |
+| ⤒ | skok (s palca na gumbu lahko vlečeš in obračaš kamero) |
+| ↺ / 😀 / 🛠 / ☰ | znova / emoti / urejevalnik / meni |
+| urejevalnik | tapni kocko zgoraj · ➕ postavi · ⛏ pobriši · ⬆⬇ gor/dol · ↶ razveljavi · ▶ preizkusi |
 
-Urejevalnik zaenkrat deluje samo na računalniku.
+Na telefonu ti igra malo pomaga:
+- če skok za las ne doseže roba, te dvigne nanj;
+- skočiš lahko še malo po tem, ko padeš z roba;
+- joystick gre naravnost, kadar je nagnjen skoraj naravnost.
+
+**🐣 Lahki način** (stikalo v meniju, na telefonu privzeto vklopljen): ko padeš, se vrneš na zadnje mesto, kjer si varno stal, in ne na kontrolno točko. Na dirki je tvoj čas označen s 🐣.
+
+**👻 Duh:** ko postaviš rekord na progi, igra posname tvoj tek. Naslednjič teče ob tebi prosojni ti, s katerim tekmuješ.
 
 | Urejevalnik | |
 |---|---|
@@ -42,7 +50,7 @@ Urejevalnik zaenkrat deluje samo na računalniku.
 | Ctrl | hitreje |
 | desni klik | postavi kocko |
 | levi klik | pobriši kocko |
-| kolešček, 1–9, 0, -, =, [, ], \\, ' | izberi kocko |
+| kolešček, 1–9, 0, -, =, [, ], \\, ', ; | izberi kocko |
 | Ctrl+Z | razveljavi |
 | E | preizkusi progo |
 
@@ -63,6 +71,7 @@ Urejevalnik zaenkrat deluje samo na računalniku.
 | 🟧 Dvigalo ⇅ | premika se gor-dol (3 kocke) |
 
 | 🪙 Kovanec | poberi ga; šteje se, ko prideš na cilj |
+| 🟪 Izginjajoča | ko stopiš nanjo, se zatrese in izgine za 3 sekunde – teci! |
 
 Premične kocke se vedno premikajo v pozitivni smeri od mesta, kamor jih postaviš.
 Sosednje kocke iste vrste se premikajo skupaj, zato lahko zgradiš večjo platformo.
@@ -94,7 +103,7 @@ Vsa besedila so v `src/i18n.js` – nov jezik dodaš tako, da skopiraš blok `en
 | `src/editor.js` | urejevalnik |
 | `src/net.js` | igranje s prijatelji (WebRTC prek knjižnice Trystero) |
 | `src/main.js` | meni, glavna zanka, dirke |
-| `src/touch.js` | kontrole za telefon (joystick, skok) |
+| `src/touch.js` | kontrole za telefon (joystick, skok, gumbi urejevalnika) |
 | `src/movers.js` | premikajoče se platforme |
 | `src/sound.js` | zvoki, narejeni s kodo |
 | `src/music.js` | glasba (note so v tabelah – kar spreminjaj!) |
@@ -111,7 +120,9 @@ JavaScript je podoben Pythonu: `function` je `def`, `{ }` zamenja zamik,
 3. Dodaj novo kocko, npr. **lepljivo** (počasna hoja) ali **teleport**.
 4. Premične platforme z nastavljivo dolžino poti in hitrostjo (zdaj sta v `movers.js` za vse enaki).
 5. Še več stvari za kovance: barve, sledi za likom, plesi.
-6. Urejevalnik na telefonu.
+6. Nov način v sobi, npr. lovljenje ali kralj hriba.
+
+Če spremeniš kaj, kar morajo imeti vsi v sobi (npr. novo kocko), povečaj `GAME_VERSION` v `src/net.js`. Tako igra prijatelje s staro različico opozori, naj osvežijo stran.
 
 ## Objava na internetu (brezplačno, GitHub Pages)
 
