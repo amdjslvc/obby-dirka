@@ -7,7 +7,7 @@ import { joinRoom } from 'trystero'
 
 const APP_ID = 'amadej-obby-dirka-2026'
 // Povečaj, ko spremeniš kaj, kar mora imeti vsak igralec v sobi (nove kocke, sporočila ...)
-export const GAME_VERSION = 2
+export const GAME_VERSION = 3
 
 // Ustvari naključno kodo sobe, npr. "KX7P"
 export function newRoomCode() {

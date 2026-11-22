@@ -21,6 +21,10 @@ export const PHYSICS = {
   ledgeAssist: 0.35, // če skok za las ne doseže roba, te dvigne nanj (v kockah)
 }
 
+// Izginjajoče kocke: koliko sekund zdržijo, ko stopiš nanje, in kdaj se vrnejo
+export const FADE_TIME = 0.6
+export const FADE_BACK = 3
+
 const HALF_W = 0.3 // pol širine igralca
 const HEIGHT = 1.8 // višina igralca
 const EPS = 0.001
@@ -43,6 +47,7 @@ export class Player {
     this.easy = false // lahki način: po padcu se vrneš na zadnje varno mesto
     this.safe = null // zadnje varno mesto (za lahki način)
     this.groundY = 0 // višina zadnjih tal, na katerih smo stali
+    this.fade = new Map() // izginjajoče kocke: "x,y,z" -> sekunde, odkar smo stopili nanje
     this.safeTimer = 0
   }
 
@@ -52,6 +57,7 @@ export class Player {
     this.spawn.set(s[0], s[1] + 0.5 + EPS, s[2])
     this.lastCheckpoint = null
     this.safe = null
+    this.fade.clear()
     this.respawn()
   }
 
@@ -90,6 +96,11 @@ export class Player {
   // input: { forward: -1..1, right: -1..1 }, camYaw: smer kamere
   update(dt, input, camYaw) {
     const P = PHYSICS
+    // izginjajoče kocke: štejemo čas, po FADE_BACK sekundah se vrnejo
+    for (const [k, t] of this.fade) {
+      if (t + dt > FADE_BACK && !this.blockedBy(k)) this.fade.delete(k)
+      else this.fade.set(k, t + dt)
+    }
     this.rideMovers()
     // --- želena smer gibanja glede na kamero ---
     const fx = -Math.sin(camYaw), fz = -Math.cos(camYaw)
@@ -160,6 +171,10 @@ export class Player {
       if (this.boost <= 0) this.events.push('boost')
       this.boost = P.boostTime
     }
+    if (this.onGround) for (const b of this.overlapping(0, true)) {
+      const k = `${b[0]},${b[1]},${b[2]}`
+      if (BLOCKS[b[3]].fade && !this.fade.has(k)) { this.fade.set(k, 0); this.events.push('fade') }
+    }
     for (const cp of this.checkpointsUnder()) {
       const key = cp.join(',')
       if (this.lastCheckpoint !== key) {
@@ -225,7 +240,7 @@ export class Player {
         for (let z = cell(z0); z <= cell(z1 - EPS); z++) {
           const t = this.level.get(x, y, z)
           // premične kocke niso na svojem mestu, kovanci pa niso trdni
-          if (t && !BLOCKS[t].move && BLOCKS[t].solid !== false) out.push([x, y, z, t])
+          if (t && !BLOCKS[t].move && BLOCKS[t].solid !== false && !this.isFaded(x, y, z, t)) out.push([x, y, z, t])
         }
     // premične platforme (na trenutnem položaju)
     for (const m of this.movers) {
@@ -259,6 +274,18 @@ export class Player {
   checkpointsUnder() {
     if (!this.onGround) return []
     return this.overlapping(0, true).filter((b) => BLOCKS[b[3]].checkpoint)
+  }
+
+  // Ali je izginjajoča kocka trenutno izginila?
+  isFaded(x, y, z, t) {
+    return BLOCKS[t].fade && this.fade.get(`${x},${y},${z}`) > FADE_TIME
+  }
+
+  // Ali bi se kocka, ki se vrača, pojavila v nas? (potem še malo počaka)
+  blockedBy(k) {
+    const [x, y, z] = k.split(',').map(Number)
+    return Math.abs(this.pos.x - x) < 0.5 + HALF_W && Math.abs(this.pos.z - z) < 0.5 + HALF_W &&
+      this.pos.y < y + 0.5 && this.pos.y + HEIGHT > y - 0.5
   }
 
   get horizontalSpeed() {

@@ -25,10 +25,12 @@ export const BLOCKS = {
   15: { name: 'Dvigalo ⇅ gor-dol', color: 0xff8e3c, move: 'y', glow: 0.15 },
   // Kovanec: ni trden, pobereš ga, ko greš skozi
   16: { name: 'Kovanec 🪙', color: 0xffcc33, coin: true, solid: false },
+  // Izginjajoča: ko stopiš nanjo, se zatrese in za nekaj sekund izgine (glej player.js)
+  17: { name: 'Izginjajoča', color: 0xd9b8ff, fade: true, glow: 0.2 },
 }
 
 // Vrstni red v orodni vrstici urejevalnika (tipke 1..9, 0, -, =)
-export const HOTBAR = [1, 2, 3, 4, 12, 5, 6, 7, 8, 10, 9, 11, 16, 13, 14, 15]
+export const HOTBAR = [1, 2, 3, 4, 12, 5, 6, 7, 8, 10, 9, 11, 16, 13, 14, 15, 17]
 
 const key = (x, y, z) => `${x},${y},${z}`
 

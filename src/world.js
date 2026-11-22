@@ -4,6 +4,7 @@
 // ============================================================
 import * as THREE from 'three'
 import { BLOCKS } from './level.js'
+import { FADE_TIME, FADE_BACK } from './player.js'
 import { makeMovers, updateMovers } from './movers.js'
 export function createScene(canvas) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
@@ -209,8 +210,10 @@ export class LevelView {
       else if (!BLOCKS[t].move) (byType[t] ||= []).push([x, y, z])
     }
     const mat = new THREE.Matrix4()
+    this.fadeMesh = null
     for (const [t, list] of Object.entries(byType)) {
       const mesh = new THREE.InstancedMesh(this.geo, this.materials[t], list.length)
+      if (BLOCKS[t].fade) { this.fadeMesh = mesh; this.fadeList = list; mesh.frustumCulled = false }
       list.forEach(([x, y, z], i) => mesh.setMatrixAt(i, mat.makeTranslation(x, y, z)))
       mesh.castShadow = !BLOCKS[t].glass
       mesh.receiveShadow = true
@@ -259,6 +262,23 @@ export class LevelView {
       list.forEach((m, i) => mesh.setMatrixAt(i, mat.makeTranslation(m.x, m.y, m.z)))
       mesh.instanceMatrix.needsUpdate = true
     }
+  }
+
+  // Izginjajoče kocke: tresejo se, izginejo in spet zrastejo. fade = player.fade
+  animateFade(time, fade) {
+    if (!this.fadeMesh) return
+    const m = new THREE.Matrix4(), q = new THREE.Quaternion(), p = new THREE.Vector3(), s = new THREE.Vector3()
+    this.fadeList.forEach(([x, y, z], i) => {
+      const e = fade.get(`${x},${y},${z}`)
+      p.set(x, y, z)
+      let k = 1
+      if (e !== undefined) {
+        if (e < FADE_TIME) { p.x += Math.sin(time * 70) * 0.05; p.z += Math.cos(time * 60) * 0.05 } // trese se
+        else k = Math.max(0, Math.min(1, (e - (FADE_BACK - 0.3)) / 0.3)) // izginila, na koncu zraste nazaj
+      }
+      this.fadeMesh.setMatrixAt(i, m.compose(p, q, s.setScalar(k)))
+    })
+    this.fadeMesh.instanceMatrix.needsUpdate = true
   }
 
   // Lava malo "utripa"

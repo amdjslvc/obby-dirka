@@ -321,6 +321,7 @@ function frame() {
   lastTime = now
   time += dt
   levelView.animate(time)
+  levelView.animateFade(time, mode === 'play' || mode === 'race' ? player.fade : new Map())
 
   // premične platforme: v igri se premikajo, v urejevalniku mirujejo
   levelView.updateMovers(mode === 'play' || mode === 'race' ? worldTime() : null)
@@ -486,6 +487,7 @@ function handleEvent(ev) {
     if (player.deathPos) particles.burst(player.deathPos.clone().setY(player.deathPos.y + 0.9), FX.death)
   }
   if (ev === 'jump') particles.burst(feet, FX.dust)
+  if (ev === 'fade') { sfx('tick'); particles.burst(feet, FX.fade) }
   if (ev === 'land') particles.burst(feet, FX.land)
   if (ev === 'bounce') { sfx('bounce'); particles.burst(feet, FX.bounce) }
   if (ev === 'boost') { sfx('boost'); toast(t('boost')) }
@@ -757,7 +759,7 @@ function initMenu() {
     const s = document.createElement('div')
     s.className = 'slot'
     s.style.background = '#' + BLOCKS[type].color.toString(16).padStart(6, '0')
-    s.innerHTML = `<b>${['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '[', ']', '\\', "'"][i]}</b>` +
+    s.innerHTML = `<b>${['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '[', ']', '\\', "'", ';'][i]}</b>` +
       (BLOCKS[type].move ? `<span>${{ x: '↔', z: '↕', y: '⇅' }[BLOCKS[type].move]}</span>` : '')
     s.title = blockName(type)
     $('hotbar').append(s)

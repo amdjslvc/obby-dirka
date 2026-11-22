@@ -89,5 +89,6 @@ export const FX = {
   bounce: { count: 18, colors: [0xff4fd8, 0xffffff], speed: 3, up: 5, life: 0.6, size: 0.12, gravity: 10 },
   checkpoint: { count: 40, colors: [0x2ee6a6, 0xffffff, 0xffd23f], speed: 3, up: 9, life: 1.4, size: 0.13, gravity: 9 },
   boost: { count: 2, colors: [0xffd23f, 0xff9500], speed: 0.5, up: 0.5, life: 0.4, size: 0.12, gravity: 0 },
+  fade: { count: 10, colors: [0xd9b8ff, 0xffffff], speed: 2, up: 1, life: 0.6, size: 0.12, gravity: 8 },
   firework: { count: 50, colors: [0xff4757, 0xffd23f, 0x2ed573, 0x1e90ff, 0xa55eea, 0xffffff], speed: 9, up: 4, life: 1.6, size: 0.16, gravity: 5, spread: 0.1 },
 }
